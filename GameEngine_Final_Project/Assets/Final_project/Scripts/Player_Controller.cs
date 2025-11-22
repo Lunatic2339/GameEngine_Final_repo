@@ -40,5 +40,11 @@ public class PlayerController : MonoBehaviour
         // 애니메이션 제어
         float currentSpeed = Mathf.Abs(rb.linearVelocity.x);
         animator.SetFloat("Speed", currentSpeed);
+
+        if (moveX != 0)
+        {
+            // moveX가 양수(오른쪽)면 Scale.x를 1로, 음수(왼쪽)면 -1로 설정
+            transform.localScale = new Vector3(Mathf.Sign(moveX), 1f, 1f);
+        }
     }
 }

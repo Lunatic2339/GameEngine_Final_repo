@@ -585,6 +585,7 @@ GameObject:
   - component: {fileID: 1344624448}
   - component: {fileID: 1344624447}
   - component: {fileID: 1344624450}
+  - component: {fileID: 1344624451}
   m_Layer: 0
   m_Name: Player_Idle_0
   m_TagString: Untagged
@@ -748,6 +749,19 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &1344624451
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1344624445}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9ccf56a9c0e1bde438154e308e070764, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  moveSpeed: 5
 --- !u!1 &1396482213
 GameObject:
   m_ObjectHideFlags: 0

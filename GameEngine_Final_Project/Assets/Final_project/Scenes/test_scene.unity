@@ -764,6 +764,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moveSpeed: 5
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+  jumpForce: 10
+>>>>>>> Stashed changes
 =======
   jumpForce: 10
 >>>>>>> Stashed changes

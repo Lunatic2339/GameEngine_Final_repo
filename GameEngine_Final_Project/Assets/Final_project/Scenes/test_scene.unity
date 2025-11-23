@@ -583,6 +583,7 @@ GameObject:
   - component: {fileID: 1344624446}
   - component: {fileID: 1344624449}
   - component: {fileID: 1344624448}
+  - component: {fileID: 1344624451}
   - component: {fileID: 1344624447}
   - component: {fileID: 1344624450}
   - component: {fileID: 1344624451}
@@ -623,7 +624,7 @@ Rigidbody2D:
   m_Mass: 1
   m_LinearDamping: 0
   m_AngularDamping: 0.05
-  m_GravityScale: 1
+  m_GravityScale: 3
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -762,6 +763,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 5
+<<<<<<< Updated upstream
+=======
+  jumpForce: 10
+>>>>>>> Stashed changes
 --- !u!1 &1396482213
 GameObject:
   m_ObjectHideFlags: 0

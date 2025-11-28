@@ -1,5 +1,5 @@
 using UnityEngine;
-using System.Collections; // 코루틴 사용을 위해 추가
+using System.Collections;
 
 public class PlayerController : MonoBehaviour
 {
@@ -8,13 +8,18 @@ public class PlayerController : MonoBehaviour
     public float jumpForce = 10.0f;
     private bool isGrounded = false;
 
+    [Header("벽타기 설정")]
+    public float wallSlideSpeed = 2f; // 벽탈 때 내려가는 속도
+    private bool isOnWall = false;    // 벽에 붙어있는지 체크
+    private bool isWallSliding = false; // 현재 벽타기 동작 중인지
+
     [Header("공격 설정")]
-    public Transform attackPoint;    // 플레이어 자식으로 만든 빈 오브젝트 연결
-    public float attackRange = 0.5f; // 공격 범위
-    public LayerMask enemyLayers;    // 적 레이어
-    public float attackDelay = 0.5f; // 공격 동작 시간 (이 시간 동안 이동 불가)
+    public Transform attackPoint;
+    public float attackRange = 0.5f;
+    public LayerMask enemyLayers;
+    public float attackDelay = 0.5f;
     public int attackDamage = 10;
-    private bool isAttacking = false; // 현재 공격 중인지 확인하는 플래그
+    private bool isAttacking = false;
 
     private Animator animator;
     private Rigidbody2D rb;
@@ -23,110 +28,122 @@ public class PlayerController : MonoBehaviour
     {
         animator = GetComponent<Animator>();
         rb = GetComponent<Rigidbody2D>();
-
-        if (rb == null) Debug.LogError("Rigidbody2D가 없습니다!");
-        if (attackPoint == null) Debug.LogWarning("AttackPoint가 연결되지 않았습니다! 인스펙터에서 할당해주세요.");
     }
 
     void Update()
     {
-        // 1. 공격 중이라면 이동/점프 입력을 받지 않고, 제자리에서 멈춤
+        // 1. 공격 중이면 움직임 봉인
         if (isAttacking)
         {
-            // 공격 중 미끄러짐 방지 (X축 속도 0으로, Y축은 중력 유지)
             rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y);
-            return; 
+            return;
         }
 
-        // 2. 공격 입력 감지 (Z키)
-        // 땅에 있을 때만 공격 가능하게 하려면 && isGrounded 추가
-        if (Input.GetKeyDown(KeyCode.A)) 
+        // 2. 공격 입력
+        if (Input.GetKeyDown(KeyCode.A))
         {
             StartCoroutine(AttackRoutine());
-            return; // 공격 시작했으면 아래 이동 로직 실행 안 함
+            return;
         }
 
-        // --- 기존 이동 로직 ---
-        float moveX = 0f;
-
-        if (Input.GetKey(KeyCode.LeftArrow)) moveX = -1f;
-        if (Input.GetKey(KeyCode.RightArrow)) moveX = 1f;
-
-        // 점프
-        if (Input.GetKey(KeyCode.Space) && isGrounded)
+        // --- 벽타기 상태 판단 로직 ---
+        // 조건: 벽에 닿음(isOnWall) + 공중임(!isGrounded) + 떨어지는 중(속도 y < 0)
+        // (올라가는 중에는 벽타기 모션이 나오면 안 되므로 y < 0 체크)
+        if (isOnWall && !isGrounded && rb.linearVelocity.y < 0)
         {
-            rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
-            animator.SetTrigger("Jump");
+            isWallSliding = true;
         }
-
-        // 달리기 보정
-        float runCoeff = Input.GetKey(KeyCode.LeftShift) ? 2.0f : 1.0f;
-
-        // 물리 기반 이동
-        rb.linearVelocity = new Vector2(moveX * moveSpeed * runCoeff, rb.linearVelocity.y);
-
-        // 캐릭터 방향 전환 (좌우 반전)
-        if (moveX != 0) transform.localScale = new Vector2(Mathf.Sign(moveX), 1f);
-
-        // 애니메이션 제어
-        float currentSpeed = Mathf.Abs(rb.linearVelocity.x);
-        animator.SetFloat("Speed", currentSpeed);
-    }
-
-    // 공격 로직을 처리하는 코루틴
-    IEnumerator AttackRoutine()
-    {
-        isAttacking = true; // 이동 잠금
-
-        // 1. 애니메이션 실행
-        // animator.SetTrigger("Attack");
-
-        // 2. 물리 판정 (범위 내 적 감지)
-        // AttackPoint가 없으면 현재 위치 기준으로 함 (에러 방지)
-        Vector2 point = attackPoint != null ? attackPoint.position : transform.position;
-        Collider2D[] hitEnemies = Physics2D.OverlapCircleAll(point, attackRange, enemyLayers);
-
-        // 3. 데미지 처리
-        foreach (Collider2D enemy in hitEnemies)
+        else
         {
-            Debug.Log(enemy.name + " 때림!");
-            // 적 스크립트가 있다면 여기서 함수 호출
-            // enemy.GetComponent<Enemy>()?.TakeDamage(attackDamage);
+            isWallSliding = false;
         }
 
-        // 4. 딜레이 (공격 모션이 끝날 때까지 대기)
-        // 애니메이션 길이와 비슷하게 맞춰주세요 (예: 0.5초)
-        yield return new WaitForSeconds(attackDelay);
+        // --- 이동 및 점프 로직 ---
 
-        isAttacking = false; // 이동 잠금 해제
+        // 3. 벽타기 중일 때 (특수 조작)
+        if (isWallSliding)
+        {
+            // A. 좌우 이동 불가 (X축 속도 0으로 고정)
+            // B. 천천히 미끄러짐 (Y축 속도 wallSlideSpeed로 고정)
+            rb.linearVelocity = new Vector2(0f, -wallSlideSpeed);
+
+            // C. 벽타기 애니메이션
+            // animator.SetBool("IsWallSliding", true);
+
+            // D. 벽 점프 (벽에서도 점프 가능하게)
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                // 점프하는 순간 벽타기 해제 및 위로 튀어오름
+                rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
+                animator.SetTrigger("Jump");
+            }
+        }
+        // 4. 평소 상태 (일반 조작)
+        else
+        {
+            animator.SetBool("IsWallSliding", false);
+
+            float moveX = 0f;
+            if (Input.GetKey(KeyCode.LeftArrow)) moveX = -1f;
+            if (Input.GetKey(KeyCode.RightArrow)) moveX = 1f;
+
+            // 일반 점프 (땅에 있을 때만)
+            if (Input.GetKey(KeyCode.Space) && isGrounded)
+            {
+                rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
+                animator.SetTrigger("Jump");
+            }
+
+            // 달리기
+            float runCoeff = Input.GetKey(KeyCode.LeftShift) ? 2.0f : 1.0f;
+            rb.linearVelocity = new Vector2(moveX * moveSpeed * runCoeff, rb.linearVelocity.y);
+
+            // 방향 전환
+            if (moveX != 0) transform.localScale = new Vector2(Mathf.Sign(moveX), 1f);
+
+            // 달리기 애니메이션
+            float currentSpeed = Mathf.Abs(rb.linearVelocity.x);
+            animator.SetFloat("Speed", currentSpeed);
+        }
     }
 
-    // 에디터에서 공격 범위 확인용
-    void OnDrawGizmosSelected()
-    {
-        if (attackPoint == null) return;
-        Gizmos.DrawWireSphere(attackPoint.position, attackRange);
-    }
-
-    // --- 바닥 충돌 체크 (기존 코드 유지) ---
+    // ---------------------------------------------------------
+    // 충돌 감지 (Collision) - 여기가 핵심입니다!
+    // ---------------------------------------------------------
+    
     void OnCollisionEnter2D(Collision2D collision)
     {
-        if (collision.gameObject.CompareTag("Ground"))
-        {
-            isGrounded = true;
-        }
-        if (collision.gameObject.CompareTag("Bullet"))
-        {
-            // 총알과 충돌 시 처리 (예: 데미지 받기)
-            Debug.Log("플레이어가 총알에 맞았습니다!");
-        }
+        // 땅 체크
+        if (collision.gameObject.CompareTag("Ground")) isGrounded = true;
+
+        // 벽 체크 (Tag로 확인)
+        if (collision.gameObject.CompareTag("Wall")) isOnWall = true;
     }
 
     void OnCollisionExit2D(Collision2D collision)
     {
-        if (collision.gameObject.CompareTag("Ground"))
+        // 땅에서 발 뗌
+        if (collision.gameObject.CompareTag("Ground")) isGrounded = false;
+
+        // 벽에서 몸 뗌
+        if (collision.gameObject.CompareTag("Wall")) isOnWall = false;
+    }
+
+    // ---------------------------------------------------------
+    // 공격 코루틴 (기존 유지)
+    IEnumerator AttackRoutine()
+    {
+        isAttacking = true;
+        animator.SetTrigger("Attack");
+
+        Vector2 point = attackPoint != null ? attackPoint.position : transform.position;
+        Collider2D[] hitEnemies = Physics2D.OverlapCircleAll(point, attackRange, enemyLayers);
+
+        foreach (Collider2D enemy in hitEnemies)
         {
-            isGrounded = false;
+            // enemy.GetComponent<Enemy>()?.TakeDamage(attackDamage);
         }
+        yield return new WaitForSeconds(attackDelay);
+        isAttacking = false;
     }
 }

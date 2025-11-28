@@ -9,7 +9,7 @@ public class PlayerController : MonoBehaviour
     private bool isGrounded = false;
 
     [Header("벽타기 설정")]
-    public float wallSlideSpeed = 2f; // 벽탈 때 내려가는 속도
+    public float wallSlideSpeed = 0.5f; // 벽탈 때 내려가는 속도
     private bool isOnWall = false;    // 벽에 붙어있는지 체크
     private bool isWallSliding = false; // 현재 벽타기 동작 중인지
 
@@ -68,13 +68,13 @@ public class PlayerController : MonoBehaviour
             rb.linearVelocity = new Vector2(0f, -wallSlideSpeed);
 
             // C. 벽타기 애니메이션
-            // animator.SetBool("IsWallSliding", true);
+            animator.SetBool("IsOnWall", true);
 
             // D. 벽 점프 (벽에서도 점프 가능하게)
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 // 점프하는 순간 벽타기 해제 및 위로 튀어오름
-                rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
+                rb.linearVelocity = new Vector2(rb.linearVelocity.x+jumpForce, jumpForce);
                 animator.SetTrigger("Jump");
             }
         }
@@ -114,7 +114,12 @@ public class PlayerController : MonoBehaviour
     void OnCollisionEnter2D(Collision2D collision)
     {
         // 땅 체크
-        if (collision.gameObject.CompareTag("Ground")) isGrounded = true;
+        if (collision.gameObject.CompareTag("Ground"))
+        {
+            isGrounded = true;
+            animator.SetBool("isGrounded", true);
+        }
+
 
         // 벽 체크 (Tag로 확인)
         if (collision.gameObject.CompareTag("Wall")) isOnWall = true;
@@ -123,10 +128,18 @@ public class PlayerController : MonoBehaviour
     void OnCollisionExit2D(Collision2D collision)
     {
         // 땅에서 발 뗌
-        if (collision.gameObject.CompareTag("Ground")) isGrounded = false;
+        if (collision.gameObject.CompareTag("Ground")) 
+        {
+            isGrounded = false;
+            animator.SetBool("isGrounded", false);
+        }
 
         // 벽에서 몸 뗌
-        if (collision.gameObject.CompareTag("Wall")) isOnWall = false;
+        if (collision.gameObject.CompareTag("Wall")) 
+        {
+            isOnWall = false;
+            animator.SetBool("IsOnWall", false);
+        }
     }
 
     // ---------------------------------------------------------

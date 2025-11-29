@@ -4,43 +4,48 @@ public class InfiniteParallax : MonoBehaviour
 {
     private GameObject cam;
     private float length, startpos;
-    private float offsetY; // 카메라와 배경의 초기 Y축 간격 저장용
+    public float offsetY; 
 
     [Header("가로 패럴랙스 강도 (0~1)")]
-    [SerializeField] private float parallaxEffect; 
-    // 1: 배경이 카메라랑 같이 움직임 (안 움직이는 것처럼 보임 - 먼 배경)
-    // 0: 배경이 가만히 있음 (빠르게 지나감 - 가까운 배경)
+    [SerializeField] public float parallaxEffect; 
 
     void Start()
     {
         cam = Camera.main.gameObject;
-        
-        // 1. 시작 X 위치 저장
         startpos = transform.position.x;
-        
-        // 2. 배경 이미지 길이 계산 (SpriteRenderer 필수)
         length = GetComponent<SpriteRenderer>().bounds.size.x;
-
-        // 3. ★핵심★ 시작할 때 카메라와 배경의 높이 차이(Gap)를 기억해둠
-        // 이렇게 해야 배경을 조금 위/아래로 배치했을 때 그 간격이 유지됨
+        
+        // 시작 시 카메라와 배경의 Y축 높이 차이를 저장
         offsetY = transform.position.y - cam.transform.position.y;
     }
 
-    void LateUpdate() // 카메라 이동 후 떨림 방지를 위해 LateUpdate 추천
+    void FixedUpdate() 
     {
-        // --- X축 (무한 스크롤 로직) ---
-        float temp = (cam.transform.position.x * (1 - parallaxEffect)); // 재배치 판정용
-        float dist = (cam.transform.position.x * parallaxEffect);       // 실제 이동 거리
+        float temp = (cam.transform.position.x * (1 - parallaxEffect));
+        float dist = (cam.transform.position.x * parallaxEffect);
 
-        // --- Y축 (카메라 고정 로직) ---
-        // 카메라의 Y 위치에 아까 구해둔 간격(offsetY)만 더해서 1:1로 따라감
-        float lockedY = cam.transform.position.y + offsetY;
+        // 1. 배경 이동 (Y축은 카메라 고정)
+        transform.position = new Vector3(startpos + dist, cam.transform.position.y, transform.position.z);
 
-        // 최종 위치 적용
-        transform.position = new Vector3(startpos + dist, lockedY, transform.position.z);
+        // ★ 핵심 수정: 감지 범위를 1배가 아니라 1.5배로 늘립니다! ★
+        // 이유: 점프를 3칸(3 length)씩 하니까, 돌아올 때 감지되지 않으려면 여유 공간이 필요함.
+        
+        float checkDist = length * 1.5f; // 감지 거리 확장
 
-        // --- 무한 루프 (재배치) ---
-        if (temp > startpos + length) startpos += length;
-        else if (temp < startpos - length) startpos -= length;
+        if (temp > startpos + length) // 원래 코드대로라면 여기가 겹침 문제의 원인
+        {
+             // 여기 조건을 조금 더 여유롭게 잡아야 지터링이 안 생기지만, 
+             // 가장 확실한 건 아래처럼 조건문 자체를 바꾸는 것입니다.
+        }
+
+        // ▼ 지터링 방지용 최종 로직 ▼
+        if (temp > startpos + checkDist)
+        {
+            startpos += length * 3;
+        }
+        else if (temp < startpos - checkDist)
+        {
+            startpos -= length * 3;
+        }
     }
 }

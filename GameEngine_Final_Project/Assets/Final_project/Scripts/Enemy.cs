@@ -45,6 +45,8 @@ public class Enemy : MonoBehaviour
 
     void Attack()
     {
+        
+
         // 2. 프리팹으로 총알 생성
         GameObject bullet = Instantiate(bulletPrefab, transform.position, Quaternion.identity);
         

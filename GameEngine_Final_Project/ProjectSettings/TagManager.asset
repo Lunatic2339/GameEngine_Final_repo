@@ -7,7 +7,7 @@ TagManager:
   - Ground
   - Bullet
   - Enemy
-  - Wall
+  - Terrain
   layers:
   - Default
   - TransparentFX

@@ -3,7 +3,7 @@ using UnityEngine;
 public class Projectile : MonoBehaviour
 {
     [Header("투사체 설정")]
-    public int damage = 10;
+    public int damage = 1;
     
     // ★ 핵심: 이게 체크되어 있으면 적의 총알, 꺼져 있으면 플레이어 총알
     public bool isEnemyBullet = false; 

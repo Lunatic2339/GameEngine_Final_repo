@@ -5,7 +5,7 @@ public class PlayerMovement : MonoBehaviour
 {
     [Header("이동 설정")]
     public float moveSpeed = 5.0f;
-    public float jumpForce = 10.0f;
+    public float jumpForce = 15.0f;
     public float originalSpeed;
 
     [Header("상태 체크")]
@@ -89,7 +89,7 @@ public class PlayerMovement : MonoBehaviour
             if (Input.GetKey(KeyCode.RightArrow) && !isCrouching) moveX = 1f;
 
             // 일반 점프 (땅에 있을 때만)
-            if (Input.GetKey(KeyCode.Space) && isGrounded)
+            if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
             {
                 rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
                 animator.SetTrigger("Jump");

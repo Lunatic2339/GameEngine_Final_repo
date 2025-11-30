@@ -10,7 +10,6 @@ GameObject:
   m_Component:
   - component: {fileID: 764571961508902327}
   - component: {fileID: 7102439319305097251}
-  - component: {fileID: 8593963159294166637}
   - component: {fileID: 3004848619928641073}
   m_Layer: 8
   m_Name: bunny3
@@ -89,22 +88,6 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!114 &8593963159294166637
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1339694899637431907}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 63d7d8f55be4d9c42b251ebe700c0957, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  bulletPrefab: {fileID: 8756323735853981376, guid: f0eb4997e6928fa46b4cf5085e7e1827, type: 3}
-  attackInterval: 2
-  bulletSpeed: 10
-  playerTransform: {fileID: 0}
 --- !u!70 &3004848619928641073
 CapsuleCollider2D:
   m_ObjectHideFlags: 0

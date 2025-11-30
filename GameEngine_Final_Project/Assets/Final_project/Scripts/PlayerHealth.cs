@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using System;
 
 public class PlayerHealth : MonoBehaviour
 {
@@ -9,6 +10,7 @@ public class PlayerHealth : MonoBehaviour
 
     // ★ UI에게 "체력 변했어!"라고 알려주는 신호탄
     public Action onHealthChanged; 
+
 
     [Header("무적 설정")]
     public float iframeDuration = 1.5f;
@@ -33,7 +35,7 @@ public class PlayerHealth : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Enemy"))
         {
-            TakeDamage(10);
+            TakeDamage(1);
              // 적과 부딪히면 10 데미지
         }
     }
@@ -44,14 +46,14 @@ public class PlayerHealth : MonoBehaviour
         // 무적 상태라면 데미지 무시
         if (isInvincible) return;
 
-        currentHealth -= damage;
-        Debug.Log("플레이어 체력: " + currentHealth);
+        currentLives -= damage;
+        Debug.Log("플레이어 체력: " + currentLives);
 
         // ★ UI에게 신호 보내기! (UI야, 다시 그려라!)
         onHealthChanged?.Invoke();
 
         // 1. 사망 체크
-        if (currentHealth <= 0)
+        if (currentLives <= 0)
         {
             Die();
             return;

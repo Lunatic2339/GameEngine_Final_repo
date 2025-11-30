@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: ee3277fdf98f6420f8f211f37bb5e4ba
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 9100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 195248
+  packageName: Warped Vehicles
+  packageVersion: 1.0
+  assetPath: Assets/Warped Vehicles/Pixel Art/vehicle 3/frames-thrust/thrust-back/thrust-back1.controller
+  uploadId: 433041

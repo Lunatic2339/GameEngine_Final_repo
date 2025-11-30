@@ -11,6 +11,7 @@ public class PlayerAttack : MonoBehaviour
     public Transform standFirePoint;
     public Transform crouchFirePoint;
     public Transform wallFirePoint;
+    public Transform upFirePoint;
 
     [Header("총알 설정")]
     public GameObject bulletPrefab;
@@ -20,7 +21,8 @@ public class PlayerAttack : MonoBehaviour
 
     [Header("애니메이션 설정")]
     public float shootHolsterTime = 0.5f; // 공격 후 자세 유지 시간 (1초)
-    private Coroutine shootRoutine;       // 현재 돌아가는 타이머 저장용
+    private Coroutine shootRoutine;    // 현재 돌아가는 타이머 저장용
+    public bool isUpShooting = false;  
 
 
 
@@ -39,6 +41,7 @@ public class PlayerAttack : MonoBehaviour
             Shoot();
             nextFireTime = Time.time + fireRate;
         }
+
     }
 
     void Shoot()
@@ -62,6 +65,10 @@ public class PlayerAttack : MonoBehaviour
         {
             currentFirePoint = wallFirePoint;
         }
+        else if(playerMovement.isUpShooting)
+        {
+            currentFirePoint = upFirePoint;
+        }
         else
         {
             currentFirePoint = standFirePoint;
@@ -71,9 +78,16 @@ public class PlayerAttack : MonoBehaviour
         GameObject bullet = Instantiate(bulletPrefab, currentFirePoint.position, currentFirePoint.rotation);
         Rigidbody2D rb = bullet.GetComponent<Rigidbody2D>();
 
-        float facingDir = Mathf.Sign(transform.localScale.x);
-        rb.linearVelocity = new Vector2(facingDir * bulletSpeed, 0f);
-        bullet.transform.localScale = new Vector2(facingDir, 1f);
+        float facingDir = Mathf.Sign(transform.localScale.x); // 플레이어가 보는 방향
+        if (playerMovement.isUpShooting)
+        {
+            rb.linearVelocity = new Vector2(0f, bulletSpeed); // 속도 설정
+        }
+        else
+        {
+            rb.linearVelocity = new Vector2(facingDir * bulletSpeed, 0f); // 속도 설정
+        }
+ 
     }
 
     // ★ 자세 유지 코루틴 (핵심)

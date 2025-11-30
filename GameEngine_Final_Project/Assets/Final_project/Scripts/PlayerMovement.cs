@@ -13,6 +13,7 @@ public class PlayerMovement : MonoBehaviour
     public bool isCrouching = false;
     public bool isOnWall = false;    
     public bool isWallJumping = false;
+    public bool isUpShooting = false;
 
     [Header("벽타기 설정")]
     public float wallSlideSpeed = 5f; // 벽탈 때 내려가는 속도
@@ -85,8 +86,19 @@ public class PlayerMovement : MonoBehaviour
                 bodyCollider.size = originalSize;
                 bodyCollider.offset = originalOffset;
             }
-            if (Input.GetKey(KeyCode.LeftArrow) && !isCrouching) moveX = -1f;
-            if (Input.GetKey(KeyCode.RightArrow) && !isCrouching) moveX = 1f;
+            if (Input.GetKey(KeyCode.LeftArrow) && !isCrouching && !isUpShooting) moveX = -1f;
+            if (Input.GetKey(KeyCode.RightArrow) && !isCrouching && !isUpShooting) moveX = 1f;
+
+            if(isGrounded && !isOnWall && Input.GetKey(KeyCode.UpArrow))
+            {
+                animator.SetBool("isUpShooting", true);
+                isUpShooting = true;
+            }
+            else
+            {
+                animator.SetBool("isUpShooting", false);
+                isUpShooting = false;
+            }
 
             // 일반 점프 (땅에 있을 때만)
             if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
@@ -94,6 +106,7 @@ public class PlayerMovement : MonoBehaviour
                 rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
                 animator.SetTrigger("Jump");
             }
+
 
             // 달리기
             rb.linearVelocity = new Vector2(moveX * moveSpeed, rb.linearVelocity.y);

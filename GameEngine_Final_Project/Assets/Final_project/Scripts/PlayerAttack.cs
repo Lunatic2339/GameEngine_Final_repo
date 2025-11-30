@@ -27,6 +27,7 @@ public class PlayerAttack : MonoBehaviour
     {
         if (playerMovement == null) playerMovement = GetComponent<PlayerMovement>();
         if (animator == null) animator = GetComponent<Animator>();
+
     }
 
     void Update()

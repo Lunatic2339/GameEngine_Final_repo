@@ -6,24 +6,38 @@ public class PlayerMovement : MonoBehaviour
     [Header("이동 설정")]
     public float moveSpeed = 5.0f;
     public float jumpForce = 15.0f;
-    [HideInInspector] public float originalSpeed; // 인스펙터에선 숨김 (수정 불필요)
+    [HideInInspector] public float originalSpeed;
 
-    [Header("상태 체크 (디버깅용)")]
+    [Header("상태 체크")]
     public bool isGrounded = false;
     public bool isCrouching = false;
     public bool isOnWall = false;    
     public bool isWallJumping = false;
     public bool isUpShooting = false;
-    // ★ [추가됨] 점프 중인지 체크 (땅/벽 판정 잠시 무시용)
+    public bool isCharging = false;
+    public bool isDashing = false; // [대쉬] 현재 대쉬 중인가?
+    
     private bool isJumping = false;
 
+    [Header("능력 해금")]
+    public bool unlockDoubleJump = false;
+    private bool canDoubleJump = false; 
+
+    // ★ [대쉬] 설정 변수들
+    [Header("대쉬 설정")]
+    public float dashSpeed = 20f;      // 대쉬 속도 (이동 속도의 3~4배 추천)
+    public float dashDuration = 0.8f;  // 대쉬 지속 시간 (짧게!)
+    public float dashCooldown = 3.0f;  // 지상 대쉬 쿨타임
+    private bool canDash = true;       // 공중 대쉬 가능 여부 (땅 밟으면 리셋)
+    private float lastDashTime = -100f;// 마지막 대쉬 시간 (쿨타임용)
+    private float defaultGravity;      // 원래 중력 저장용
+
     [Header("벽타기 설정")]
-    public float wallSlideSpeed = 2f; // 기본 미끄러짐 속도
-    public float wallFastSlideSpeed = 8f; // 아래키 눌렀을 때 속도 [추가됨]
+    public float wallSlideSpeed = 2f; 
+    public float wallFastSlideSpeed = 8f; 
     public float wallJumpDuration = 0.2f;
 
     [Header("웅크리기 설정")]
-    // [SerializeField]를 쓰면 private이어도 인스펙터에서 수정 가능!
     [SerializeField] private Vector2 crouchSize = new Vector2(1.24f, 1.69f);
     [SerializeField] private Vector2 crouchOffset = new Vector2(0.06f, 1.75f);
     
@@ -40,45 +54,100 @@ public class PlayerMovement : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         bodyCollider = GetComponent<CapsuleCollider2D>();
         
-        // 초기값 저장
         originalSize = bodyCollider.size;
         originalOffset = bodyCollider.offset;
         originalSpeed = moveSpeed;
+        
+        defaultGravity = rb.gravityScale; // [대쉬] 원래 중력값 기억
     }
 
     void Update()
     {
-        // 1. 벽 점프 중이면 조작 불가 (관성 유지)
-        if (isWallJumping) return;
+        // 1. 조작 완전 불가 상태 (벽 점프, 대쉬 중)
+        // 대쉬 중일 때도 return을 해서 이동/점프/벽타기 로직을 다 무시해야 함
+        if (isWallJumping || isDashing) return;
 
-        // 2. 벽타기 로직 (공중 + 벽 + 떨어지는 중)
-        // (Update에서 isOnWall을 신뢰하되, 물리적 조건은 Collision에서 처리)
+        // 2. 대쉬 입력 체크 (Z, X는 공격이니 C나 Shift 추천)
+        if (Input.GetKeyDown(KeyCode.LeftShift))
+        {
+            AttemptDash();
+            if (isDashing) return;
+        }
+
+        // 3. 상태별 로직 실행
         if (isOnWall && !isGrounded)
         {
             HandleWallSlide();
         }
-        // 3. 평소 상태 (일반 이동)
         else
         {
             HandleNormalMovement();
         }
     }
 
-    // --- 기능별 함수 분리 (가독성 향상) ---
+    // ★ [대쉬] 대쉬 시도 함수
+    void AttemptDash()
+    {
+        // 웅크리기, 차징 중에는 대쉬 불가 (기획에 따라 변경 가능)
+        if (isCrouching || isCharging) return;
+
+        // A. 땅에 있을 때 (쿨타임 체크)
+        if (isGrounded)
+        {
+            if (Time.time >= lastDashTime + dashCooldown)
+            {
+                StartCoroutine(DashRoutine());
+            }
+        }
+        // B. 공중이거나 벽에 있을 때 (횟수 체크)
+        else
+        {
+            if (canDash)
+            {
+                StartCoroutine(DashRoutine());
+            }
+        }
+    }
+
+    // ★ [대쉬] 실행 코루틴
+    IEnumerator DashRoutine()
+    {
+        Debug.Log("대쉬!");
+        isDashing = true;          // 다른 조작 잠금
+        canDash = false;           // 공중 대쉬 기회 소모 (땅 밟아야 리필)
+        lastDashTime = Time.time;  // 쿨타임 갱신
+        
+        // 1. 중력 0으로 만들기 (직선으로 날아가기 위해)
+        rb.gravityScale = 0f;
+        
+        // 2. 속도 적용 (보는 방향으로 발사!)
+        float facingDir = Mathf.Sign(transform.localScale.x);
+        rb.linearVelocity = new Vector2(facingDir * dashSpeed, 0f);
+
+        // 3. 애니메이션 (나중에 추가)
+        // animator.SetTrigger("Dash"); 
+        
+        // 잔상 효과(Ghost Effect) 같은 게 있다면 여기서 Start
+
+        // 4. 지속 시간 대기
+        yield return new WaitForSeconds(dashDuration);
+
+        // 5. 복구
+        rb.gravityScale = defaultGravity; // 중력 복구
+        rb.linearVelocity = Vector2.zero; // 속도 정지 (관성 없애기)
+        
+        isDashing = false; // 조작 잠금 해제
+    }
 
     void HandleWallSlide()
     {
         bool isDown = Input.GetKey(KeyCode.DownArrow);
-        
-        // 아래키 누르면 빠르게, 아니면 천천히 미끄러짐
         float targetSpeed = isDown ? wallFastSlideSpeed : wallSlideSpeed;
         
-        // 벽타기 시 X축 고정, Y축은 미끄러짐 속도 적용
         rb.linearVelocity = new Vector2(0f, -targetSpeed);
         
         float facingDir = Mathf.Sign(transform.localScale.x);
 
-        // 벽 점프
         if (Input.GetKeyDown(KeyCode.Space))
         {
             StartCoroutine(WallJumpRoutine(facingDir));
@@ -89,84 +158,108 @@ public class PlayerMovement : MonoBehaviour
     {
         float moveX = 0f;
 
-        // 웅크리기 입력 처리
-        if (isGrounded && !isOnWall && Input.GetKey(KeyCode.DownArrow))
+        if (!isCharging)
         {
-            if (!isCrouching)
+            if (isGrounded && !isOnWall && Input.GetKey(KeyCode.DownArrow))
             {
-                isCrouching = true;
-                animator.SetBool("isCrouching", true);
-                bodyCollider.size = crouchSize;
-                bodyCollider.offset = crouchOffset;
+                if (!isCrouching)
+                {
+                    isCrouching = true;
+                    animator.SetBool("isCrouching", true);
+                    bodyCollider.size = crouchSize;
+                    bodyCollider.offset = crouchOffset;
+                }
+            }
+            else if (isCrouching) 
+            {
+                if (!Input.GetKey(KeyCode.DownArrow) || !isGrounded)
+                {
+                    isCrouching = false;
+                    animator.SetBool("isCrouching", false);
+                    bodyCollider.size = originalSize;
+                    bodyCollider.offset = originalOffset;
+                }
+            }
+
+            if (Input.GetKey(KeyCode.LeftArrow) && !isCrouching && !isUpShooting) moveX = -1f;
+            if (Input.GetKey(KeyCode.RightArrow) && !isCrouching && !isUpShooting) moveX = 1f;
+
+            bool upInput = Input.GetKey(KeyCode.UpArrow);
+            if (isGrounded && !isOnWall && upInput)
+            {
+                if (!isUpShooting) { isUpShooting = true; animator.SetBool("isUpShooting", true); }
+            }
+            else if (isUpShooting)
+            {
+                isUpShooting = false; animator.SetBool("isUpShooting", false);
+            }
+
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                if (isGrounded)
+                {
+                    PerformJump();
+                    canDoubleJump = true;
+                }
+                else if (unlockDoubleJump && canDoubleJump && !isOnWall)
+                {
+                    PerformJump();
+                    canDoubleJump = false;
+                    Debug.Log("더블 점프!");
+                }
             }
         }
-        // 웅크리기 해제 (키를 뗐거나 공중이거나)
-        else if (isCrouching) 
+        else 
         {
-            isCrouching = false;
-            animator.SetBool("isCrouching", false);
-            bodyCollider.size = originalSize;
-            bodyCollider.offset = originalOffset;
+            moveX = 0f;
         }
 
-        // 좌우 이동 (앉기, 위보기 중엔 이동 불가)
-        if (Input.GetKey(KeyCode.LeftArrow) && !isCrouching && !isUpShooting) moveX = -1f;
-        if (Input.GetKey(KeyCode.RightArrow) && !isCrouching && !isUpShooting) moveX = 1f;
-
-        // 위 조준
-        bool upInput = Input.GetKey(KeyCode.UpArrow);
-        if (isGrounded && !isOnWall && upInput)
-        {
-            if (!isUpShooting)
-            {
-                isUpShooting = true;
-                animator.SetBool("isUpShooting", true);
-            }
-        }
-        else if (isUpShooting && (!upInput || !isGrounded))
-        {
-            isUpShooting = false;
-            animator.SetBool("isUpShooting", false);
-        }
-
-// ★ [수정됨] 일반 점프
-        if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
-        {
-            StartCoroutine(JumpCooldownRoutine()); // 쿨타임 코루틴 시작
-        }
-
-        // 이동 적용
         rb.linearVelocity = new Vector2(moveX * moveSpeed, rb.linearVelocity.y);
 
-        // 방향 전환
         if (moveX != 0) transform.localScale = new Vector2(Mathf.Sign(moveX), 1f);
 
-        // 애니메이션 Speed
         animator.SetFloat("Speed", Mathf.Abs(rb.linearVelocity.x));
     }
 
-// ★ [추가됨] 점프 쿨타임 코루틴
-    // 점프하는 순간 0.1초 동안은 땅/벽 판정을 강제로 끕니다.
+    void PerformJump()
+    {
+        StartCoroutine(JumpCooldownRoutine());
+    }
+
     IEnumerator JumpCooldownRoutine()
     {
-        isJumping = true; // 판정 무시 시작
+        isJumping = true; 
         
-        // 점프 힘 가하기
+        rb.linearVelocity = new Vector2(rb.linearVelocity.x, 0f);
         rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
         animator.SetTrigger("Jump");
         
-        // 땅/벽 상태 강제 해제 (UI 갱신용)
         isGrounded = false;
         isOnWall = false;
         animator.SetBool("isGrounded", false);
         animator.SetBool("isOnWall", false);
 
-        // 0.1초 대기 (이 동안은 충돌 감지 함수가 작동 안 함)
         yield return new WaitForSeconds(0.1f);
-
-        isJumping = false; // 판정 무시 끝
+        isJumping = false;
     }
-    
+
+    IEnumerator WallJumpRoutine(float facingDir)
+    {
+        isWallJumping = true;  
+        isOnWall = false;      
+        animator.SetBool("isOnWall", false);
+
+        // ★ [대쉬 연계] 벽 점프 하면 공중 대쉬 횟수도 리필해줄지? (보통 해줌)
+        canDash = true; 
+        canDoubleJump = true;
+
+        rb.linearVelocity = new Vector2(facingDir * moveSpeed * 1.5f, jumpForce * 1.2f);
+        animator.SetTrigger("Jump");
+
+        yield return new WaitForSeconds(wallJumpDuration);
+        isWallJumping = false;
+    }
+
     void OnCollisionEnter2D(Collision2D collision) => EvaluateCollision(collision);
     void OnCollisionStay2D(Collision2D collision) => EvaluateCollision(collision);
 
@@ -176,56 +269,36 @@ public class PlayerMovement : MonoBehaviour
 
         if (collision.gameObject.CompareTag("Terrain"))
         {
-            // 임시 변수: 이번 충돌에서 땅이나 벽을 찾았는지 체크
             bool foundGround = false;
             bool foundWall = false;
-            ContactPoint2D wallContact = new ContactPoint2D(); // 벽 방향 계산용
+            ContactPoint2D wallContact = new ContactPoint2D();
 
-            // ★ 핵심 수정: 모든 접촉점을 다 뒤져봅니다!
-            // GetContact(0)만 쓰면 재수 없게 벽이 먼저 걸릴 수 있음.
             for (int i = 0; i < collision.contactCount; i++)
             {
                 ContactPoint2D contact = collision.GetContact(i);
-
-                // 1. 땅을 발견했는가?
-                if (contact.normal.y > 0.7f)
-                {
-                    foundGround = true;
-                    break; // 땅을 찾았으면 더 볼 것도 없음 (땅이 최우선)
-                }
-                
-                // 2. 벽을 발견했는가? (아직 땅을 못 찾았을 때만 의미 있음)
-                if (Mathf.Abs(contact.normal.x) > 0.7f)
-                {
-                    foundWall = true;
-                    wallContact = contact; // 나중에 방향 계산을 위해 저장
-                }
+                if (contact.normal.y > 0.7f) { foundGround = true; break; } 
+                if (Mathf.Abs(contact.normal.x) > 0.7f) { foundWall = true; wallContact = contact; }
             }
 
-            // --- 판정 결과 적용 ---
-
-            // A. 땅이 하나라도 있었다면 -> 무조건 Ground 상태
             if (foundGround)
             {
                 isGrounded = true;
                 animator.SetBool("isGrounded", true);
-                
                 isOnWall = false;
                 animator.SetBool("isOnWall", false);
-                return; // 벽 판정 무시하고 종료
+                
+                canDoubleJump = true; 
+                canDash = true; // ★ [대쉬] 땅 밟으면 대쉬 리필!
+                return;
             }
 
-            // B. 땅은 없고 벽만 있으며, 공중이고, 떨어지는 중이라면 -> 벽타기
             if (foundWall && !isGrounded && rb.linearVelocity.y < 0.1f)
             {
                 isOnWall = true;
+                canDash = true; // ★ [대쉬] 벽에 닿아도 대쉬 리필!
                 animator.SetBool("isOnWall", true);
-
-                // 아까 저장해둔 벽의 정보로 방향 전환
-                if (wallContact.normal.x > 0.1f) 
-                    transform.localScale = new Vector2(1, 1); 
-                else if (wallContact.normal.x < -0.1f)
-                    transform.localScale = new Vector2(-1, 1);  
+                if (wallContact.normal.x > 0.1f) transform.localScale = new Vector2(1, 1); 
+                else if (wallContact.normal.x < -0.1f) transform.localScale = new Vector2(-1, 1);  
             }
         }
     }
@@ -236,25 +309,8 @@ public class PlayerMovement : MonoBehaviour
         {
             isGrounded = false;
             isOnWall = false;
-            
             animator.SetBool("isGrounded", false);
             animator.SetBool("isOnWall", false);
         }
-    }
-
-    IEnumerator WallJumpRoutine(float facingDir)
-    {
-        isWallJumping = true;  
-        isOnWall = false;      
-        animator.SetBool("isOnWall", false);
-
-        // 점프 방향 (벽 반대편으로)
-        rb.linearVelocity = new Vector2(facingDir * moveSpeed * 1.5f, jumpForce * 1.2f);
-        
-        animator.SetTrigger("Jump");
-
-        yield return new WaitForSeconds(wallJumpDuration);
-
-        isWallJumping = false;
     }
 }

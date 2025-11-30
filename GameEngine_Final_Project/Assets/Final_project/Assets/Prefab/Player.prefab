@@ -168,8 +168,10 @@ MonoBehaviour:
   wallFirePoint: {fileID: 7642811952616743597}
   upFirePoint: {fileID: 7929917485938196883}
   bulletPrefab: {fileID: 3335131157216226225, guid: 9d7049554bbd1c243a4aaef164bf32b9, type: 3}
+  chargedBulletPrefab: {fileID: 7871666964835727391, guid: 50292b83e6eb64f429d6dcdab3e4d9a6, type: 3}
   bulletSpeed: 15
-  fireRate: 0.5
+  chargeTimeNeeded: 1
+  chargeEffectPrefab: {fileID: 0}
   shootHolsterTime: 1
 --- !u!114 &8096769537411218200
 MonoBehaviour:
@@ -191,6 +193,7 @@ MonoBehaviour:
   isOnWall: 0
   isWallJumping: 0
   isUpShooting: 0
+  isCharging: 0
   wallSlideSpeed: 2
   wallFastSlideSpeed: 8
   wallJumpDuration: 0.2

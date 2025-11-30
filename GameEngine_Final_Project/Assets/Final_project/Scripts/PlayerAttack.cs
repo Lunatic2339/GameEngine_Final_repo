@@ -93,7 +93,7 @@ public class PlayerAttack : MonoBehaviour
     IEnumerator HolsterWeaponRoutine()
     {
         // 1. 공격 자세 진입
-        animator.SetBool("isShooting", trsue);
+        animator.SetBool("isShooting", true);
 
         // 2. 지정된 시간(1초)만큼 대기
         // (만약 이 도중에 또 Shoot()을 하면 이 코루틴은 강제 종료되고 다시 시작됨)

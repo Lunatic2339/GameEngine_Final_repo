@@ -137,7 +137,7 @@ public class PlayerMovement : MonoBehaviour
             if (contact.normal.y > 0.7f) 
             {
                 isGrounded = true;
-                animator.SetBool("IsGrounded", true);
+                animator.SetBool("isGrounded", true);
             }
         }
 
@@ -176,7 +176,7 @@ public class PlayerMovement : MonoBehaviour
             if (contact.normal.y > 0.7f) 
             {
                 isGrounded = true;
-                animator.SetBool("IsGrounded", true);
+                animator.SetBool("isGrounded", true);
             }
         }
     }

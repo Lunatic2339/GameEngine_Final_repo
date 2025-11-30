@@ -14,6 +14,8 @@ public class PlayerMovement : MonoBehaviour
     public bool isOnWall = false;    
     public bool isWallJumping = false;
     public bool isUpShooting = false;
+    // ★ [추가됨] 점프 중인지 체크 (땅/벽 판정 잠시 무시용)
+    private bool isJumping = false;
 
     [Header("벽타기 설정")]
     public float wallSlideSpeed = 2f; // 기본 미끄러짐 속도
@@ -127,11 +129,10 @@ public class PlayerMovement : MonoBehaviour
             animator.SetBool("isUpShooting", false);
         }
 
-        // 일반 점프
+// ★ [수정됨] 일반 점프
         if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
         {
-            rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
-            animator.SetTrigger("Jump");
+            StartCoroutine(JumpCooldownRoutine()); // 쿨타임 코루틴 시작
         }
 
         // 이동 적용
@@ -144,16 +145,34 @@ public class PlayerMovement : MonoBehaviour
         animator.SetFloat("Speed", Mathf.Abs(rb.linearVelocity.x));
     }
 
-    // ---------------------------------------------------------
-    // 충돌 감지 (중복 코드 제거 최적화)
-    // ---------------------------------------------------------
+// ★ [추가됨] 점프 쿨타임 코루틴
+    // 점프하는 순간 0.1초 동안은 땅/벽 판정을 강제로 끕니다.
+    IEnumerator JumpCooldownRoutine()
+    {
+        isJumping = true; // 판정 무시 시작
+        
+        // 점프 힘 가하기
+        rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
+        animator.SetTrigger("Jump");
+        
+        // 땅/벽 상태 강제 해제 (UI 갱신용)
+        isGrounded = false;
+        isOnWall = false;
+        animator.SetBool("isGrounded", false);
+        animator.SetBool("isOnWall", false);
+
+        // 0.1초 대기 (이 동안은 충돌 감지 함수가 작동 안 함)
+        yield return new WaitForSeconds(0.1f);
+
+        isJumping = false; // 판정 무시 끝
+    }
     
-void OnCollisionEnter2D(Collision2D collision) => EvaluateCollision(collision);
+    void OnCollisionEnter2D(Collision2D collision) => EvaluateCollision(collision);
     void OnCollisionStay2D(Collision2D collision) => EvaluateCollision(collision);
 
     void EvaluateCollision(Collision2D collision)
     {
-        if (isWallJumping) return;
+        if (isWallJumping || isJumping) return;
 
         if (collision.gameObject.CompareTag("Terrain"))
         {

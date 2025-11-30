@@ -61,7 +61,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2355041789718873168}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -7, y: -3.8, z: 0.047971863}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -166,6 +166,7 @@ MonoBehaviour:
   standFirePoint: {fileID: 1521112235372988007}
   crouchFirePoint: {fileID: 1182245928646838652}
   wallFirePoint: {fileID: 7642811952616743597}
+  upFirePoint: {fileID: 7929917485938196883}
   bulletPrefab: {fileID: 3335131157216226225, guid: 9d7049554bbd1c243a4aaef164bf32b9, type: 3}
   bulletSpeed: 15
   fireRate: 0.5
@@ -189,8 +190,12 @@ MonoBehaviour:
   isCrouching: 0
   isOnWall: 0
   isWallJumping: 0
+  isUpShooting: 0
   wallSlideSpeed: 2
+  wallFastSlideSpeed: 8
   wallJumpDuration: 0.2
+  crouchSize: {x: 1.24, y: 1.69}
+  crouchOffset: {x: 0.06, y: 1.75}
 --- !u!50 &3318750434801328519
 Rigidbody2D:
   serializedVersion: 5
@@ -214,7 +219,7 @@ Rigidbody2D:
   m_ExcludeLayers:
     serializedVersion: 2
     m_Bits: 0
-  m_Interpolate: 0
+  m_Interpolate: 1
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 4
@@ -342,7 +347,7 @@ Transform:
   m_GameObject: {fileID: 5632572124023313463}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0.21, y: 3.72, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

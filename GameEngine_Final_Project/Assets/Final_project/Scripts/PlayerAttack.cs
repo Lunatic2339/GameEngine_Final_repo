@@ -22,7 +22,6 @@ public class PlayerAttack : MonoBehaviour
     [Header("애니메이션 설정")]
     public float shootHolsterTime = 0.5f; // 공격 후 자세 유지 시간 (1초)
     private Coroutine shootRoutine;    // 현재 돌아가는 타이머 저장용
-    public bool isUpShooting = false;  
 
 
 
@@ -36,7 +35,7 @@ public class PlayerAttack : MonoBehaviour
     void Update()
     {
         // 공격 키 입력 (Z) & 연사 쿨타임 체크
-        if ( (playerMovement.isGrounded || playerMovement.isOnWall) && Input.GetKey(KeyCode.Z) && Time.time >= nextFireTime)
+        if ( (playerMovement.isGrounded || playerMovement.isOnWall) && Input.GetKeyDown(KeyCode.Z) && Time.time >= nextFireTime)
         {
             Shoot();
             nextFireTime = Time.time + fireRate;
@@ -94,7 +93,7 @@ public class PlayerAttack : MonoBehaviour
     IEnumerator HolsterWeaponRoutine()
     {
         // 1. 공격 자세 진입
-        animator.SetBool("isShooting", true);
+        animator.SetBool("isShooting", trsue);
 
         // 2. 지정된 시간(1초)만큼 대기
         // (만약 이 도중에 또 Shoot()을 하면 이 코루틴은 강제 종료되고 다시 시작됨)

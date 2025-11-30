@@ -126,11 +126,19 @@ public class PlayerMovement : MonoBehaviour
     
     void OnCollisionEnter2D(Collision2D collision)
     {
-        // 땅 체크
         if (collision.gameObject.CompareTag("Ground"))
         {
-            isGrounded = true;
-            animator.SetBool("isGrounded", true);
+            // ★ 핵심 수정: 무조건 true가 아니라, "위쪽 방향" 충돌일 때만 인정!
+            // GetContact(0)는 첫 번째 충돌 지점의 정보를 가져옵니다.
+            ContactPoint2D contact = collision.GetContact(0);
+
+            // normal.y가 0.7보다 크면 "확실히 내 발 밑에 있다"는 뜻입니다.
+            // (완전 평지는 1.0, 약간의 경사면도 포함하기 위해 0.7 사용)
+            if (contact.normal.y > 0.7f) 
+            {
+                isGrounded = true;
+                animator.SetBool("IsGrounded", true);
+            }
         }
 
 
@@ -158,7 +166,20 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-
+    // ★ OnCollisionStay2D 추가 추천!
+    // 가끔 Enter가 씹히거나, 경사면을 타고 내려올 때 Ground 상태가 풀리는 걸 방지합니다.
+    void OnCollisionStay2D(Collision2D collision)
+    {
+        if (collision.gameObject.CompareTag("Ground"))
+        {
+            ContactPoint2D contact = collision.GetContact(0);
+            if (contact.normal.y > 0.7f) 
+            {
+                isGrounded = true;
+                animator.SetBool("IsGrounded", true);
+            }
+        }
+    }
 
     void OnCollisionExit2D(Collision2D collision)
     {

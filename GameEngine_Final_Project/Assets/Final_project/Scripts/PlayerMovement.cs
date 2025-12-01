@@ -5,7 +5,7 @@ public class PlayerMovement : MonoBehaviour
 {
     [Header("이동 설정")]
     public float moveSpeed = 5.0f;
-    public float jumpForce = 15.0f;
+    public float jumpForce = 25.0f;
     [HideInInspector] public float originalSpeed;
 
     [Header("상태 체크")]
@@ -59,6 +59,19 @@ public class PlayerMovement : MonoBehaviour
         originalSpeed = moveSpeed;
         
         defaultGravity = rb.gravityScale; // [대쉬] 원래 중력값 기억
+
+        // ★ [추가됨] GameManager와 연동 (능력 & 위치)
+        if (GameManager.instance != null)
+        {
+            // 1. 능력 불러오기
+            unlockDoubleJump = GameManager.instance.hasDoubleJump;
+
+            // 2. 체크포인트 위치로 이동 (저장된 적이 있다면)
+            if (GameManager.instance.isCheckpointActive)
+            {
+                transform.position = GameManager.instance.lastCheckPointPos;
+            }
+        }
     }
 
     void Update()

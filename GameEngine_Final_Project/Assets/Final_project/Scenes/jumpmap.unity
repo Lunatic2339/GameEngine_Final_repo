@@ -395,7 +395,7 @@ GameObject:
   - component: {fileID: 342185282}
   m_Layer: 6
   m_Name: Wall
-  m_TagString: Wall
+  m_TagString: Terrain
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -665,7 +665,7 @@ GameObject:
   - component: {fileID: 444093466}
   m_Layer: 0
   m_Name: JumpTile
-  m_TagString: Ground
+  m_TagString: Terrain
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -700,7 +700,7 @@ PlatformEffector2D:
   m_RotationalOffset: 0
   m_UseOneWay: 1
   m_UseOneWayGrouping: 0
-  m_SurfaceArc: 150
+  m_SurfaceArc: 180
   m_UseSideFriction: 0
   m_UseSideBounce: 0
   m_SideArc: 1
@@ -2805,7 +2805,7 @@ GameObject:
   - component: {fileID: 831398904}
   m_Layer: 6
   m_Name: Ground
-  m_TagString: Ground
+  m_TagString: Terrain
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -4822,7 +4822,7 @@ GameObject:
   - component: {fileID: 943051943}
   m_Layer: 0
   m_Name: Ceiling
-  m_TagString: Untagged
+  m_TagString: Terrain
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -5962,7 +5962,7 @@ MonoBehaviour:
   m_StreamingVersion: 20241001
   m_LegacyPriority: 0
   Target:
-    TrackingTarget: {fileID: 2411608198991838666}
+    TrackingTarget: {fileID: 1610656351}
     LookAtTarget: {fileID: 0}
     CustomLookAtTarget: 0
   Lens:
@@ -6204,6 +6204,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   offsetY: 0
   parallaxEffect: 0.8
+--- !u!4 &1610656351 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 968967539883377636, guid: cd9599c484822a04bbe44549540a0313, type: 3}
+  m_PrefabInstance: {fileID: 2127938819}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1622253974
 GameObject:
   m_ObjectHideFlags: 0
@@ -6368,7 +6373,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 2411608198991838666}
+  - {fileID: 1610656351}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1719055949
@@ -6772,12 +6777,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!4 &2411608198991838666 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 968967539883377636, guid: cd9599c484822a04bbe44549540a0313, type: 3}
-  m_PrefabInstance: {fileID: 7605442250163752025}
-  m_PrefabAsset: {fileID: 0}
---- !u!1001 &7605442250163752025
+--- !u!1001 &2127938819
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -6803,15 +6803,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 968967539883377636, guid: cd9599c484822a04bbe44549540a0313, type: 3}
       propertyPath: m_LocalRotation.x
-      value: -0
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 968967539883377636, guid: cd9599c484822a04bbe44549540a0313, type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 968967539883377636, guid: cd9599c484822a04bbe44549540a0313, type: 3}
       propertyPath: m_LocalRotation.z
-      value: -0
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 968967539883377636, guid: cd9599c484822a04bbe44549540a0313, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -6827,23 +6827,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2355041789718873168, guid: cd9599c484822a04bbe44549540a0313, type: 3}
       propertyPath: m_Name
-      value: Player
-      objectReference: {fileID: 0}
-    - target: {fileID: 3318750434801328519, guid: cd9599c484822a04bbe44549540a0313, type: 3}
-      propertyPath: m_Interpolate
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 3318750434801328519, guid: cd9599c484822a04bbe44549540a0313, type: 3}
-      propertyPath: m_CollisionDetection
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7929917485938196883, guid: cd9599c484822a04bbe44549540a0313, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0.21
-      objectReference: {fileID: 0}
-    - target: {fileID: 7929917485938196883, guid: cd9599c484822a04bbe44549540a0313, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 3.72
+      value: Player (1)
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

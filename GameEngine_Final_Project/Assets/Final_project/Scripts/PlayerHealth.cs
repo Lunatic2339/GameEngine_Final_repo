@@ -71,6 +71,11 @@ public class PlayerHealth : MonoBehaviour
         // 일단 플레이어를 눕히거나 비활성화
         gameObject.SetActive(false); 
         // Time.timeScale = 0; // 게임 정지 (선택사항)
+        // ★ [수정됨] GameManager에게 게임오버 알리기
+        if (GameManager.instance != null)
+        {
+            GameManager.instance.GameOver();
+        }
     }
 
     // ★ 무적 시간 깜빡임 효과 (핵심)

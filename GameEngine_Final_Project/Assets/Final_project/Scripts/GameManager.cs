@@ -10,6 +10,12 @@ public class GameManager : MonoBehaviour
     public bool hasDash = false;       // 대쉬 배웠니? (나중에 확장)
     public int coinCount = 0;          // 코인 개수
 
+    public Vector2 lastCheckPointPos; // ★ 마지막 체크포인트 위치 기억
+    public bool isCheckpointActive = false; // 체크포인트를 한 번이라도 찍었는지 확인
+
+    [Header("UI 연결 (Inspector에서 할당 X, 코드로 찾음)")]
+    public GameOverUI gameOverUI; // 게임 오버 화면 스크립트
+
     void Awake()
     {
         // 1. 싱글톤 패턴 구현
@@ -36,4 +42,36 @@ public class GameManager : MonoBehaviour
         }
         // else if (abilityName == "Dash") ...
     }
+
+    // 게임 오버 시 호출
+    public void GameOver()
+    {
+        Debug.Log("게임 오버! UI를 띄웁니다.");
+        
+        // 씬에 있는 UI를 찾아서 띄움
+        if (gameOverUI == null) 
+            gameOverUI = FindFirstObjectByType<GameOverUI>();
+            
+        if (gameOverUI != null)
+            gameOverUI.ShowGameOver();
+    }
+
+    // 재시작 (버튼 연결용)
+    public void RestartGame()
+    {
+        // 현재 씬을 다시 불러옴
+        //SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        
+        // (참고: 씬이 로드되면 PlayerMovement가 Start에서 lastCheckPointPos로 이동할 것임)
+    }
+
+    // 체크포인트 도달 시 호출
+    public void UpdateCheckpoint(Vector2 pos)
+    {
+        lastCheckPointPos = pos;
+        isCheckpointActive = true;
+        Debug.Log("체크포인트 저장됨: " + pos);
+    }
 }
+
+

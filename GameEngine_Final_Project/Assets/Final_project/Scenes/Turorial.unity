@@ -184,6 +184,9 @@ MonoBehaviour:
   hasDoubleJump: 0
   hasDash: 0
   coinCount: 0
+  lastCheckPointPos: {x: 0, y: 0}
+  isCheckpointActive: 0
+  gameOverUI: {fileID: 0}
 --- !u!1 &333725989
 GameObject:
   m_ObjectHideFlags: 0
@@ -369,7 +372,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &706962377
 Transform:
   m_ObjectHideFlags: 0
@@ -10067,7 +10070,7 @@ MonoBehaviour:
   detectRange: 10
   attackRange: 4
   groundCheckPos: {fileID: 678128369}
-  bulletPrefab: {fileID: 8197235879567245989, guid: bab4469aeb16e9247afd15bd101fb62a, type: 3}
+  bulletPrefab: {fileID: 4534475594957309468, guid: 4d2d40ea74a90ed409e5362355e193c3, type: 3}
   firePoint: {fileID: 1734364588}
   fireRate: 5
 --- !u!114 &1798478962
@@ -10388,7 +10391,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3101309595173324752, guid: cd9599c484822a04bbe44549540a0313, type: 3}
       propertyPath: m_FlipX
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3318750434801328519, guid: cd9599c484822a04bbe44549540a0313, type: 3}
       propertyPath: m_Interpolate
@@ -10406,6 +10409,10 @@ PrefabInstance:
       propertyPath: upFirePoint
       value: 
       objectReference: {fileID: 1808831196}
+    - target: {fileID: 4480870400602820721, guid: cd9599c484822a04bbe44549540a0313, type: 3}
+      propertyPath: bulletPrefab
+      value: 
+      objectReference: {fileID: 8197235879567245989, guid: bab4469aeb16e9247afd15bd101fb62a, type: 3}
     - target: {fileID: 4667858529399632418, guid: cd9599c484822a04bbe44549540a0313, type: 3}
       propertyPath: m_Size.x
       value: 1
@@ -10421,6 +10428,18 @@ PrefabInstance:
     - target: {fileID: 7929917485938196883, guid: cd9599c484822a04bbe44549540a0313, type: 3}
       propertyPath: m_LocalPosition.y
       value: 3.72
+      objectReference: {fileID: 0}
+    - target: {fileID: 8096769537411218200, guid: cd9599c484822a04bbe44549540a0313, type: 3}
+      propertyPath: jumpForce
+      value: 15
+      objectReference: {fileID: 0}
+    - target: {fileID: 8096769537411218200, guid: cd9599c484822a04bbe44549540a0313, type: 3}
+      propertyPath: moveSpeed
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 8096769537411218200, guid: cd9599c484822a04bbe44549540a0313, type: 3}
+      propertyPath: isUpShooting
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

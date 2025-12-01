@@ -4,7 +4,7 @@ public class Projectile : MonoBehaviour
 {
     [Header("투사체 설정")]
     public int damage = 1;
-    
+    private Animator animator;
     // true: 적 총알(플레이어 공격), false: 플레이어 총알(적 공격)
     public bool isEnemyBullet = false; 
 
@@ -14,9 +14,18 @@ public class Projectile : MonoBehaviour
 
     void Start()
     {
+        animator = GetComponent<Animator>();
         // ★ [추가됨] 태어나자마자 "3초 뒤에 나를 파괴해라"라고 예약
         // 이렇게 하면 허공으로 날아가도 3초 뒤에 알아서 사라집니다. (메모리 누수 해결!)
         Destroy(gameObject, lifeTime);
+        if (isEnemyBullet)
+        {
+            animator.SetBool("isPlayer", false);
+        }
+        else
+        {
+            animator.SetBool("isPlayer", true);
+        }
     }
 
     void OnTriggerEnter2D(Collider2D collision)

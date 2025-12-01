@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -60,7 +61,7 @@ public class GameManager : MonoBehaviour
     public void RestartGame()
     {
         // 현재 씬을 다시 불러옴
-        //SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         
         // (참고: 씬이 로드되면 PlayerMovement가 Start에서 lastCheckPointPos로 이동할 것임)
     }

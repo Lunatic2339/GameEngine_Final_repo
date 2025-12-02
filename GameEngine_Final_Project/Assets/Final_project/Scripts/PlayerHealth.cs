@@ -11,6 +11,10 @@ public class PlayerHealth : MonoBehaviour
     // ★ UI에게 "체력 변했어!"라고 알려주는 신호탄
     public Action onHealthChanged; 
 
+    [Header("넉백 설정")]
+    public Vector2 knockbackForce = new Vector2(10f, 5f); // X: 밀리는 힘, Y: 뜨는 힘
+    public float knockbackDuration = 0.2f; // 넉백 시간
+
 
     [Header("무적 설정")]
     public float iframeDuration = 1.5f;
@@ -19,10 +23,14 @@ public class PlayerHealth : MonoBehaviour
 
     [Header("참조")]
     public SpriteRenderer spriteRenderer;
+    private Animator animator;
+    private PlayerMovement playerMovement;
     // public PlayerMovement playerMovement; // 나중에 맞으면 넉백(밀려남) 구현할 때 필요
 
     void Start()
     {
+        animator = GetComponent<Animator>();
+        playerMovement = GetComponent<PlayerMovement>();
         currentLives = maxLives;
         if (spriteRenderer == null)
         {
@@ -35,13 +43,13 @@ public class PlayerHealth : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Enemy"))
         {
-            TakeDamage(1);
+            TakeDamage(1, collision.transform);
              // 적과 부딪히면 10 데미지
         }
     }
 
 
-    public void TakeDamage(int damage)
+    public void TakeDamage(int damage, Transform damageSource)
     {
         // 무적 상태라면 데미지 무시
         if (isInvincible) return;
@@ -58,6 +66,24 @@ public class PlayerHealth : MonoBehaviour
             Die();
             return;
         }
+
+        // 2. 넉백 실행 (살아있을 때만)
+        if (damageSource != null)
+        {
+            // 방향 계산: (내 위치 - 적 위치) = 밀려날 방향
+            // Mathf.Sign을 써서 왼쪽(-1)인지 오른쪽(1)인지만 명확히 가져옴
+            float knockbackDir = Mathf.Sign(transform.position.x - damageSource.position.x);
+            
+            // 힘 벡터 만들기 (X축은 방향대로, Y축은 살짝 위로)
+            Vector2 force = new Vector2(knockbackDir * knockbackForce.x, knockbackForce.y);
+            
+            // Movement에게 명령
+            playerMovement.ApplyKnockback(force, knockbackDuration);
+        }
+
+        animator.SetTrigger("Hurt");
+
+    
 
         // 2. 무적 타임 시작 (코루틴)
         StartCoroutine(InvincibilityRoutine());

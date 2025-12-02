@@ -16,7 +16,8 @@ public class PlayerMovement : MonoBehaviour
     public bool isUpShooting = false;
     public bool isCharging = false;
     public bool isDashing = false; // [대쉬] 현재 대쉬 중인가?
-    
+    public bool isKnockedBack = false; // [추가됨] 넉백 중인가?
+
     private bool isJumping = false;
 
     [Header("능력 해금")]
@@ -26,7 +27,7 @@ public class PlayerMovement : MonoBehaviour
     // ★ [대쉬] 설정 변수들
     [Header("대쉬 설정")]
     public float dashSpeed = 20f;      // 대쉬 속도 (이동 속도의 3~4배 추천)
-    public float dashDuration = 0.8f;  // 대쉬 지속 시간 (짧게!)
+    public float dashDuration = 0.3f;  // 대쉬 지속 시간 (짧게!)
     public float dashCooldown = 3.0f;  // 지상 대쉬 쿨타임
     private bool canDash = true;       // 공중 대쉬 가능 여부 (땅 밟으면 리셋)
     private float lastDashTime = -100f;// 마지막 대쉬 시간 (쿨타임용)
@@ -78,7 +79,7 @@ public class PlayerMovement : MonoBehaviour
     {
         // 1. 조작 완전 불가 상태 (벽 점프, 대쉬 중)
         // 대쉬 중일 때도 return을 해서 이동/점프/벽타기 로직을 다 무시해야 함
-        if (isWallJumping || isDashing) return;
+        if (isWallJumping || isDashing || isKnockedBack) return;
 
         // 2. 대쉬 입력 체크 (Z, X는 공격이니 C나 Shift 추천)
         if (Input.GetKeyDown(KeyCode.LeftShift))
@@ -122,35 +123,7 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    // ★ [대쉬] 실행 코루틴
-    IEnumerator DashRoutine()
-    {
-        Debug.Log("대쉬!");
-        isDashing = true;          // 다른 조작 잠금
-        canDash = false;           // 공중 대쉬 기회 소모 (땅 밟아야 리필)
-        lastDashTime = Time.time;  // 쿨타임 갱신
-        
-        // 1. 중력 0으로 만들기 (직선으로 날아가기 위해)
-        rb.gravityScale = 0f;
-        
-        // 2. 속도 적용 (보는 방향으로 발사!)
-        float facingDir = Mathf.Sign(transform.localScale.x);
-        rb.linearVelocity = new Vector2(facingDir * dashSpeed, 0f);
-
-        // 3. 애니메이션 (나중에 추가)
-        // animator.SetTrigger("Dash"); 
-        
-        // 잔상 효과(Ghost Effect) 같은 게 있다면 여기서 Start
-
-        // 4. 지속 시간 대기
-        yield return new WaitForSeconds(dashDuration);
-
-        // 5. 복구
-        rb.gravityScale = defaultGravity; // 중력 복구
-        rb.linearVelocity = Vector2.zero; // 속도 정지 (관성 없애기)
-        
-        isDashing = false; // 조작 잠금 해제
-    }
+    
 
     void HandleWallSlide()
     {
@@ -238,7 +211,30 @@ public class PlayerMovement : MonoBehaviour
     {
         StartCoroutine(JumpCooldownRoutine());
     }
+    public void ApplyKnockback(Vector2 force, float duration)
+    {
+        StartCoroutine(KnockbackRoutine(force, duration));
+    }
 
+    IEnumerator KnockbackRoutine(Vector2 force, float duration)
+    {
+        isKnockedBack = true;  // 조작 잠금
+        isDashing = false;     // 대쉬 중이었다면 취소
+        isWallJumping = false; // 벽점프 중이었다면 취소
+        
+        // 1. 기존 속도 초기화 (중요! 가던 힘을 없애야 팍 튀어나감)
+        rb.linearVelocity = Vector2.zero;
+
+        // 2. 넉백 힘 적용 (밀어내기)
+        rb.linearVelocity = force;
+
+        // 3. 넉백 시간만큼 대기 (이 동안은 조작 불가)
+        yield return new WaitForSeconds(duration);
+
+        // 4. 복구
+        rb.linearVelocity = Vector2.zero; // 미끄러짐 방지
+        isKnockedBack = false; // 조작 재개
+    }
     IEnumerator JumpCooldownRoutine()
     {
         isJumping = true; 
@@ -271,6 +267,35 @@ public class PlayerMovement : MonoBehaviour
 
         yield return new WaitForSeconds(wallJumpDuration);
         isWallJumping = false;
+    }
+    // ★ [대쉬] 실행 코루틴
+    IEnumerator DashRoutine()
+    {
+        Debug.Log("대쉬!");
+        isDashing = true;          // 다른 조작 잠금
+        canDash = false;           // 공중 대쉬 기회 소모 (땅 밟아야 리필)
+        lastDashTime = Time.time;  // 쿨타임 갱신
+        
+        // 1. 중력 0으로 만들기 (직선으로 날아가기 위해)
+        rb.gravityScale = 0f;
+        
+        // 2. 속도 적용 (보는 방향으로 발사!)
+        float facingDir = Mathf.Sign(transform.localScale.x);
+        rb.linearVelocity = new Vector2(facingDir * dashSpeed, 0f);
+
+        // 3. 애니메이션 (나중에 추가)
+        // animator.SetTrigger("Dash"); 
+        
+        // 잔상 효과(Ghost Effect) 같은 게 있다면 여기서 Start
+
+        // 4. 지속 시간 대기
+        yield return new WaitForSeconds(dashDuration);
+
+        // 5. 복구
+        rb.gravityScale = defaultGravity; // 중력 복구
+        rb.linearVelocity = Vector2.zero; // 속도 정지 (관성 없애기)
+        
+        isDashing = false; // 조작 잠금 해제
     }
 
     void OnCollisionEnter2D(Collision2D collision) => EvaluateCollision(collision);

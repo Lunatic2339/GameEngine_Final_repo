@@ -46,7 +46,7 @@ public class Projectile : MonoBehaviour
                 PlayerHealth player = collision.GetComponent<PlayerHealth>();
                 if (player != null)
                 {
-                    player.TakeDamage(damage); // 플레이어 체력 깎기
+                    player.TakeDamage(damage, transform); // 플레이어 체력 깎기
                 }
                 
                 Destroy(gameObject); // 총알 삭제

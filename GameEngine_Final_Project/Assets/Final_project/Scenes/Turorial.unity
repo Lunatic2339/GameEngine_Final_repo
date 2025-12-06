@@ -179,7 +179,6 @@ GameObject:
   m_Component:
   - component: {fileID: 333725990}
   - component: {fileID: 333725993}
-  - component: {fileID: 333725992}
   - component: {fileID: 333725991}
   m_Layer: 5
   m_Name: HeartContainer
@@ -220,49 +219,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Padding:
-    m_Left: 0
+    m_Left: 20
     m_Right: 0
-    m_Top: 0
+    m_Top: 20
     m_Bottom: 0
   m_ChildAlignment: 0
-  m_Spacing: 5
+  m_Spacing: 15
   m_ChildForceExpandWidth: 0
   m_ChildForceExpandHeight: 0
-  m_ChildControlWidth: 0
-  m_ChildControlHeight: 0
+  m_ChildControlWidth: 1
+  m_ChildControlHeight: 1
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
---- !u!114 &333725992
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 333725989}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.392}
-  m_RaycastTarget: 1
-  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
-  m_Maskable: 1
-  m_OnCullStateChanged:
-    m_PersistentCalls:
-      m_Calls: []
-  m_Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
-  m_Type: 1
-  m_PreserveAspect: 0
-  m_FillCenter: 1
-  m_FillMethod: 4
-  m_FillAmount: 1
-  m_FillClockwise: 1
-  m_FillOrigin: 0
-  m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 1
 --- !u!222 &333725993
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -9777,8 +9746,8 @@ MonoBehaviour:
   playerHealth: {fileID: 2411608198991838673}
   heartPrefab: {fileID: 5705078794571315153, guid: 72e4391ce9ab4664781d8b20c21be825, type: 3}
   heartContainer: {fileID: 333725990}
-  fullHeart: {fileID: 21300000, guid: bd59bf2e866ed4529ae645637eb9c11d, type: 3}
-  emptyHeart: {fileID: 21300000, guid: de20f767e3f3f4aff870112daa2b2562, type: 3}
+  fullHeart: {fileID: -205270267638800340, guid: 6134ad8f191d9a940a5e05d069ea0b6f, type: 3}
+  emptyHeart: {fileID: -705465144167411356, guid: 884d685c36e1690488c81aabcd5307d6, type: 3}
 --- !u!1 &1561185880
 GameObject:
   m_ObjectHideFlags: 0
@@ -10967,6 +10936,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxLives: 5
   currentLives: 0
+  knockbackForce: {x: 10, y: 5}
+  knockbackDuration: 0.2
   iframeDuration: 1.5
   numberOfFlashes: 4
   spriteRenderer: {fileID: 0}
@@ -11042,6 +11013,10 @@ PrefabInstance:
       propertyPath: m_Interpolate
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 3318750434801328519, guid: cd9599c484822a04bbe44549540a0313, type: 3}
+      propertyPath: m_GravityScale
+      value: 3.5
+      objectReference: {fileID: 0}
     - target: {fileID: 3622507920330775191, guid: cd9599c484822a04bbe44549540a0313, type: 3}
       propertyPath: m_Layer
       value: 0
@@ -11075,6 +11050,10 @@ PrefabInstance:
       value: 3.72
       objectReference: {fileID: 0}
     - target: {fileID: 8096769537411218200, guid: cd9599c484822a04bbe44549540a0313, type: 3}
+      propertyPath: dashSpeed
+      value: 30
+      objectReference: {fileID: 0}
+    - target: {fileID: 8096769537411218200, guid: cd9599c484822a04bbe44549540a0313, type: 3}
       propertyPath: jumpForce
       value: 15
       objectReference: {fileID: 0}
@@ -11083,8 +11062,16 @@ PrefabInstance:
       value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 8096769537411218200, guid: cd9599c484822a04bbe44549540a0313, type: 3}
+      propertyPath: dashDuration
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8096769537411218200, guid: cd9599c484822a04bbe44549540a0313, type: 3}
       propertyPath: isUpShooting
-      value: 1
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8096769537411218200, guid: cd9599c484822a04bbe44549540a0313, type: 3}
+      propertyPath: isKnockedBack
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

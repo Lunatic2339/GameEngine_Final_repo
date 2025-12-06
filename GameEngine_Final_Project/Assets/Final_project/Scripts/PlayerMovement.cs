@@ -103,7 +103,7 @@ public class PlayerMovement : MonoBehaviour
     void AttemptDash()
     {
         // 웅크리기, 차징 중에는 대쉬 불가 (기획에 따라 변경 가능)
-        if (isCrouching || isCharging) return;
+        if (isCrouching) return;
 
         // A. 땅에 있을 때 (쿨타임 체크)
         if (isGrounded)
@@ -284,7 +284,7 @@ public class PlayerMovement : MonoBehaviour
         rb.linearVelocity = new Vector2(facingDir * dashSpeed, 0f);
 
         // 3. 애니메이션 (나중에 추가)
-        // animator.SetTrigger("Dash"); 
+        animator.SetTrigger("Dash"); 
         
         // 잔상 효과(Ghost Effect) 같은 게 있다면 여기서 Start
 

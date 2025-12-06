@@ -5,8 +5,8 @@ public class PlayerMovement : MonoBehaviour
 {
     [Header("이동 설정")]
     public float moveSpeed = 5.0f;
-    public float jumpForce = 15.0f;
-    public float doubleJumpForce = 12.0f;
+    public float jumpForce = 20.0f;
+    public float doubleJumpForce = 15.0f;
     [HideInInspector] public float originalSpeed;
 
     [Header("상태 체크")]

@@ -44,11 +44,12 @@ GameObject:
   - component: {fileID: 2885412165804331221}
   - component: {fileID: 4480870400602820721}
   - component: {fileID: 8096769537411218200}
+  - component: {fileID: 3810483960401656794}
   - component: {fileID: 3318750434801328519}
   - component: {fileID: 4667858529399632418}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Player
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -167,11 +168,9 @@ MonoBehaviour:
   crouchFirePoint: {fileID: 1182245928646838652}
   wallFirePoint: {fileID: 7642811952616743597}
   upFirePoint: {fileID: 7929917485938196883}
-  bulletPrefab: {fileID: 3335131157216226225, guid: 9d7049554bbd1c243a4aaef164bf32b9, type: 3}
-  chargedBulletPrefab: {fileID: 7871666964835727391, guid: 50292b83e6eb64f429d6dcdab3e4d9a6, type: 3}
+  bulletPrefab: {fileID: 8197235879567245989, guid: bab4469aeb16e9247afd15bd101fb62a, type: 3}
   bulletSpeed: 15
-  chargeTimeNeeded: 1
-  chargeEffectPrefab: {fileID: 0}
+  fireRate: 0.2
   shootHolsterTime: 1
 --- !u!114 &8096769537411218200
 MonoBehaviour:
@@ -185,8 +184,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9ccf56a9c0e1bde438154e308e070764, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 5
-  jumpForce: 10
+  moveSpeed: 7
+  jumpForce: 15
+  doubleJumpForce: 12
   originalSpeed: 0
   isGrounded: 0
   isCrouching: 0
@@ -194,11 +194,36 @@ MonoBehaviour:
   isWallJumping: 0
   isUpShooting: 0
   isCharging: 0
+  isDashing: 0
+  isKnockedBack: 0
+  unlockDoubleJump: 0
+  dashSpeed: 30
+  dashDuration: 0.2
+  dashCooldown: 3
   wallSlideSpeed: 2
   wallFastSlideSpeed: 8
   wallJumpDuration: 0.2
   crouchSize: {x: 1.24, y: 1.69}
   crouchOffset: {x: 0.06, y: 1.75}
+--- !u!114 &3810483960401656794
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2355041789718873168}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 31202515bf424254484fb88b02f2169e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxLives: 5
+  currentLives: 0
+  knockbackForce: {x: 20, y: 5}
+  knockbackDuration: 0.8
+  iframeDuration: 0.5
+  numberOfFlashes: 4
+  spriteRenderer: {fileID: 0}
 --- !u!50 &3318750434801328519
 Rigidbody2D:
   serializedVersion: 5
@@ -214,7 +239,7 @@ Rigidbody2D:
   m_Mass: 1
   m_LinearDamping: 0
   m_AngularDamping: 0.05
-  m_GravityScale: 2.5
+  m_GravityScale: 3.5
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -224,7 +249,7 @@ Rigidbody2D:
     m_Bits: 0
   m_Interpolate: 1
   m_SleepingMode: 1
-  m_CollisionDetection: 0
+  m_CollisionDetection: 1
   m_Constraints: 4
 --- !u!70 &4667858529399632418
 CapsuleCollider2D:
@@ -261,7 +286,7 @@ CapsuleCollider2D:
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 2.25}
-  m_Size: {x: 1.3, y: 2.57}
+  m_Size: {x: 1, y: 2.57}
   m_Direction: 0
 --- !u!1 &3622507920330775191
 GameObject:

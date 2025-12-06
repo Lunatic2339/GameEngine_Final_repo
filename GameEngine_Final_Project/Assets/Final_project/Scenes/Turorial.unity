@@ -10938,7 +10938,7 @@ MonoBehaviour:
   currentLives: 0
   knockbackForce: {x: 10, y: 5}
   knockbackDuration: 0.2
-  iframeDuration: 1.5
+  iframeDuration: 1
   numberOfFlashes: 4
   spriteRenderer: {fileID: 0}
 --- !u!1001 &7605442250163752025

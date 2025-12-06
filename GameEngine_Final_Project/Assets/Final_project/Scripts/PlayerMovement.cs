@@ -5,7 +5,8 @@ public class PlayerMovement : MonoBehaviour
 {
     [Header("이동 설정")]
     public float moveSpeed = 5.0f;
-    public float jumpForce = 25.0f;
+    public float jumpForce = 15.0f;
+    public float doubleJumpForce = 12.0f;
     [HideInInspector] public float originalSpeed;
 
     [Header("상태 체크")]
@@ -240,7 +241,7 @@ public class PlayerMovement : MonoBehaviour
         isJumping = true; 
         
         rb.linearVelocity = new Vector2(rb.linearVelocity.x, 0f);
-        rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
+        rb.linearVelocity = new Vector2(rb.linearVelocity.x, doubleJumpForce);
         animator.SetTrigger("Jump");
         
         isGrounded = false;

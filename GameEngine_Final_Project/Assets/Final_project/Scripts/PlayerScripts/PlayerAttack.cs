@@ -33,11 +33,11 @@ public class PlayerAttack : MonoBehaviour
     void Update()
     {
         // 공격 입력 (Z) & 연사 쿨타임 체크
-        if (Input.GetKeyDown(KeyCode.Z) && Time.time >= nextFireTime)
+        if (Input.GetKey(KeyCode.Z) && Time.time >= nextFireTime)
         {
             // ★ 핵심 조건: 땅에 있거나 OR 벽에 붙어있을 때만 발사 가능
             // (즉, 점프 중이거나 떨어지는 중에는 발사 불가)
-            if (playerMovement.isGrounded || playerMovement.isOnWall)
+            if (!playerMovement.isDashing)
             {
                 Shoot();
                 nextFireTime = Time.time + fireRate;

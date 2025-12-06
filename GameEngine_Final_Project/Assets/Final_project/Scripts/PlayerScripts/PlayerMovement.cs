@@ -126,18 +126,46 @@ public class PlayerMovement : MonoBehaviour
 
     
 
-    void HandleWallSlide()
+void HandleWallSlide()
     {
         bool isDown = Input.GetKey(KeyCode.DownArrow);
         float targetSpeed = isDown ? wallFastSlideSpeed : wallSlideSpeed;
         
         rb.linearVelocity = new Vector2(0f, -targetSpeed);
         
+        // 현재 캐릭터가 보고 있는 방향 (벽 반대편 = 점프할 방향)
         float facingDir = Mathf.Sign(transform.localScale.x);
 
+        // 점프 키를 눌렀을 때
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            StartCoroutine(WallJumpRoutine(facingDir));
+            // ★ 조건 분기: 플레이어가 '점프할 방향(벽 반대)'으로 키를 누르고 있는가?
+            bool isPressingJumpDir = false;
+
+            if (facingDir > 0 && Input.GetKey(KeyCode.RightArrow)) isPressingJumpDir = true;
+            if (facingDir < 0 && Input.GetKey(KeyCode.LeftArrow)) isPressingJumpDir = true;
+
+            // 1. 방향키와 함께 눌렀다 -> [강력한 벽 점프] (기존 로직)
+            if (isPressingJumpDir)
+            {
+                StartCoroutine(WallJumpRoutine(facingDir));
+            }
+            // 2. 그냥 점프만 눌렀다 -> [제자리/수직 점프] (새로운 로직)
+            else
+            {
+                // 벽타기 해제
+                isOnWall = false;
+                animator.SetBool("isOnWall", false);
+
+                // 위로 점프! (X축으로 아주 살짝만 밀어줘야 다시 벽에 안 붙음)
+                // facingDir * 3f 정도의 약한 힘으로 벽에서 떼어냅니다.
+                rb.linearVelocity = new Vector2(facingDir * 3f, jumpForce); 
+                
+                animator.SetTrigger("Jump");
+
+                // 바로 다시 벽에 붙는 걸 방지하기 위해 0.1초 쿨타임만 줌 (조작은 가능)
+                StartCoroutine(JumpCooldownRoutine());
+            }
         }
     }
 

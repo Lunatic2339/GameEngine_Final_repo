@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class TeleportTile : MonoBehaviour
+public class TeleportPlatform : MonoBehaviour
 {
     [Header("도착 지점 설정")]
     public Transform destination; // 이동할 위치 (빈 오브젝트)

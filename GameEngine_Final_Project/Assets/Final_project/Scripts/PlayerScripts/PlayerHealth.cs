@@ -11,6 +11,8 @@ public class PlayerHealth : MonoBehaviour
     // ★ UI에게 "체력 변했어!"라고 알려주는 신호탄
     public Action onHealthChanged; 
 
+    public int dashDamage = 1; // 대쉬 공격 데미지
+
     [Header("넉백 설정")]
     public Vector2 knockbackForce = new Vector2(10f, 5f); // X: 밀리는 힘, Y: 뜨는 힘
     public float knockbackDuration = 0.2f; // 넉백 시간
@@ -43,6 +45,24 @@ public class PlayerHealth : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Enemy"))
         {
+            if(playerMovement.IsDashing)
+            {
+                // 1. 적의 스크립트를 가져옴
+                EnemyHealth enemy = collision.gameObject.GetComponent<EnemyHealth>();
+                
+                // 2. 적 스크립트가 있으면 데미지 줌
+                if (enemy != null)
+                {
+                    enemy.TakeDamage(dashDamage); // 데미지 1
+                    
+                    // (선택사항) 때리는 맛을 위해 반동 주기?
+                    // Rigidbody2D rb = GetComponent<Rigidbody2D>();
+                    // if(rb != null) rb.linearVelocity = new Vector2(-transform.localScale.x * 5f, 5f);
+                }
+                
+                // 3. 대쉬 중엔 나는 안 아파야 하니까 여기서 끝냄
+                return;
+            }
             TakeDamage(1, collision.transform);
              // 적과 부딪히면 10 데미지
         }

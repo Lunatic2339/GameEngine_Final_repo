@@ -300,7 +300,7 @@ void HandleWallSlide()
     // ★ [대쉬] 실행 코루틴
     IEnumerator DashRoutine()
     {
-        Debug.Log("대쉬!");
+        Physics2D.IgnoreLayerCollision(LayerMask.NameToLayer("Player"), LayerMask.NameToLayer("Enemy"), true);
         isDashing = true;          // 다른 조작 잠금
         canDash = false;           // 공중 대쉬 기회 소모 (땅 밟아야 리필)
         lastDashTime = Time.time;  // 쿨타임 갱신
@@ -323,6 +323,7 @@ void HandleWallSlide()
         // 5. 복구
         rb.gravityScale = defaultGravity; // 중력 복구
         rb.linearVelocity = Vector2.zero; // 속도 정지 (관성 없애기)
+        Physics2D.IgnoreLayerCollision(LayerMask.NameToLayer("Player"), LayerMask.NameToLayer("Enemy"), false);
         
         isDashing = false; // 조작 잠금 해제
     }

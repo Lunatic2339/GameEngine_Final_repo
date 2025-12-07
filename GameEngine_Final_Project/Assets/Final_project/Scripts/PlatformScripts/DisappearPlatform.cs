@@ -48,7 +48,7 @@ public class DisappearingPlatform : MonoBehaviour
                 // === 모드 1: 깜빡이다 사라지기 ===
                 yield return StartCoroutine(BlinkModeRoutine());
             }
-            else
+            else if(platformMode == PlatformMode.Fade)
             {
                 // === 모드 2: 서서히 사라지기 (Fade) ===
                 yield return StartCoroutine(FadeModeRoutine());

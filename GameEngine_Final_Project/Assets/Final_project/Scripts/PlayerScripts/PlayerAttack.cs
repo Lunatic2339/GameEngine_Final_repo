@@ -13,7 +13,7 @@ public class PlayerAttack : MonoBehaviour
     [Header("근접 공격 (Z키)")]
     public Transform attackPoint;     // 칼 휘두르는 중심점 (빈 오브젝트)
     public float attackRange = 0.8f;  // 공격 범위 반지름
-    public LayerMask enemyLayers;     // 적 레이어 (Enemy만 때려야 함)
+    public LayerMask targetLayers;     // 적 레이어 (Enemy만 때려야 함)
     public int meleeDamage = 1;       // 칼 데미지
     public float meleeRate = 0.3f;    // 칼질 속도 (연타 방지)
     private float nextMeleeTime = 0f;
@@ -80,8 +80,7 @@ public class PlayerAttack : MonoBehaviour
 
         // 2. 범위 감지: attackPoint를 중심으로 원을 그려서 적을 찾음
         if (attackPoint == null) return;
-        Collider2D[] hitEnemies = Physics2D.OverlapCircleAll(attackPoint.position, attackRange, enemyLayers);
-
+            Collider2D[] hitObjects = Physics2D.OverlapCircleAll(attackPoint.position, attackRange, targetLayers);   
         // 3. 감지된 적에게 데미지 줌
         foreach (Collider2D obj in hitObjects)
         {

@@ -32,6 +32,48 @@ public class GameManager : MonoBehaviour
             Destroy(gameObject);
         }
     }
+    // ★ [핵심] 데이터 저장하기 (체크포인트 닿을 때 호출)
+    // -----------------------------------------------------------
+    public void SaveGameData(int currentHealth)
+    {
+        // 1. 위치 저장 (Vector3는 바로 저장이 안 돼서 X, Y 따로 저장)
+        PlayerPrefs.SetFloat("SaveX", lastCheckPointPos.x);
+        PlayerPrefs.SetFloat("SaveY", lastCheckPointPos.y);
+
+        // 2. 체력 저장
+        PlayerPrefs.SetInt("SaveHealth", currentHealth);
+
+        // 3. 현재 씬 이름 저장 (어느 맵이었는지)
+        PlayerPrefs.SetString("SaveScene", SceneManager.GetActiveScene().name);
+
+        // 4. 저장했다고 도장 쾅! (유효성 체크용)
+        PlayerPrefs.SetInt("HasSaveData", 1);
+        
+        PlayerPrefs.Save(); // 디스크에 쓰기
+        Debug.Log("게임 저장 완료!");
+    }
+
+    // -----------------------------------------------------------
+    // ★ [핵심] 데이터 불러오기 (게임 시작/이어하기 때 호출)
+    // -----------------------------------------------------------
+    public void LoadGameData()
+    {
+        // 저장된 데이터가 없으면 실행 안 함
+        if (!PlayerPrefs.HasKey("HasSaveData")) return;
+
+        // 1. 위치 불러오기
+        float x = PlayerPrefs.GetFloat("SaveX");
+        float y = PlayerPrefs.GetFloat("SaveY");
+        lastCheckPointPos = new Vector2(x, y);
+
+        // 2. 씬 이름 불러오기 -> 해당 씬으로 이동
+        string sceneName = PlayerPrefs.GetString("SaveScene");
+        SceneManager.LoadScene(sceneName);
+        
+        // (참고: 체력이나 실제 플레이어 이동은 씬이 로딩된 후,
+        // Player 스크립트의 Start()에서 GameManager의 정보를 가져가서 적용함)
+    }
+
 
     // 능력 해금 함수
     public void UnlockAbility(string abilityName)

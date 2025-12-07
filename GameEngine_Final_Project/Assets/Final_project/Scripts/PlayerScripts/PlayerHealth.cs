@@ -33,7 +33,14 @@ public class PlayerHealth : MonoBehaviour
     {
         animator = GetComponent<Animator>();
         playerMovement = GetComponent<PlayerMovement>();
-        currentLives = maxLives;
+        if (PlayerPrefs.HasKey("SaveHealth"))
+        {
+            currentLives = PlayerPrefs.GetInt("SaveHealth");
+        }
+        else
+        {
+            currentLives = maxLives;
+        }
         if (spriteRenderer == null)
         {
             spriteRenderer = GetComponent<SpriteRenderer>();

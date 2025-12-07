@@ -45,7 +45,7 @@ public class PlayerHealth : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Enemy"))
         {
-            if(playerMovement.IsDashing)
+            if(playerMovement.isDashing)
             {
                 // 1. 적의 스크립트를 가져옴
                 EnemyHealth enemy = collision.gameObject.GetComponent<EnemyHealth>();

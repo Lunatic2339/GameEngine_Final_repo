@@ -37,7 +37,7 @@ public class PlayerMovement : MonoBehaviour
     [Header("벽타기 설정")]
     public float wallSlideSpeed = 2f; 
     public float wallFastSlideSpeed = 8f; 
-    public float wallJumpDuration = 0.2f;
+    public float wallJumpDuration = 0.1f;
 
     [Header("웅크리기 설정")]
     [SerializeField] private Vector2 crouchSize = new Vector2(1.24f, 1.69f);
@@ -159,7 +159,7 @@ void HandleWallSlide()
 
                 // 위로 점프! (X축으로 아주 살짝만 밀어줘야 다시 벽에 안 붙음)
                 // facingDir * 3f 정도의 약한 힘으로 벽에서 떼어냅니다.
-                rb.linearVelocity = new Vector2(facingDir * 3f, jumpForce); 
+                rb.linearVelocity = new Vector2(facingDir * 6f, jumpForce * 1.5f); 
                 
                 animator.SetTrigger("Jump");
 
@@ -269,7 +269,7 @@ void HandleWallSlide()
         isJumping = true; 
         
         rb.linearVelocity = new Vector2(rb.linearVelocity.x, 0f);
-        rb.linearVelocity = new Vector2(rb.linearVelocity.x, doubleJumpForce);
+        rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
         animator.SetTrigger("Jump");
         
         isGrounded = false;
@@ -291,7 +291,7 @@ void HandleWallSlide()
         canDash = true; 
         canDoubleJump = true;
 
-        rb.linearVelocity = new Vector2(facingDir * moveSpeed * 1.5f, jumpForce * 1.2f);
+        rb.linearVelocity = new Vector2(facingDir * moveSpeed, jumpForce);
         animator.SetTrigger("Jump");
 
         yield return new WaitForSeconds(wallJumpDuration);

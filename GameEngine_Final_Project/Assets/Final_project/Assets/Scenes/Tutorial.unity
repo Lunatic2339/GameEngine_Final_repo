@@ -9589,6 +9589,22 @@ PrefabInstance:
       propertyPath: m_LocalPosition.y
       value: 2.48
       objectReference: {fileID: 0}
+    - target: {fileID: 3810483960401656794, guid: cd9599c484822a04bbe44549540a0313, type: 3}
+      propertyPath: iframeDuration
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3810483960401656794, guid: cd9599c484822a04bbe44549540a0313, type: 3}
+      propertyPath: numberOfFlashes
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 3810483960401656794, guid: cd9599c484822a04bbe44549540a0313, type: 3}
+      propertyPath: knockbackForce.x
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 3810483960401656794, guid: cd9599c484822a04bbe44549540a0313, type: 3}
+      propertyPath: knockbackDuration
+      value: 0.4
+      objectReference: {fileID: 0}
     - target: {fileID: 4480870400602820721, guid: cd9599c484822a04bbe44549540a0313, type: 3}
       propertyPath: attackPoint
       value: 
@@ -9596,6 +9612,14 @@ PrefabInstance:
     - target: {fileID: 4480870400602820721, guid: cd9599c484822a04bbe44549540a0313, type: 3}
       propertyPath: enemyLayers.m_Bits
       value: 256
+      objectReference: {fileID: 0}
+    - target: {fileID: 8096769537411218200, guid: cd9599c484822a04bbe44549540a0313, type: 3}
+      propertyPath: jumpForce
+      value: 20
+      objectReference: {fileID: 0}
+    - target: {fileID: 8096769537411218200, guid: cd9599c484822a04bbe44549540a0313, type: 3}
+      propertyPath: isGrounded
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

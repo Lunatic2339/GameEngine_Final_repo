@@ -25,6 +25,10 @@ public class PlayerMovement : MonoBehaviour
     public bool unlockDoubleJump = false;
     private bool canDoubleJump = false; 
 
+    [Header("조작감 보정")]
+    public float coyoteTime = 0.1f; // 땅에서 발이 떨어져도 0.1초간은 점프 인정
+    private float coyoteTimer;
+
     // ★ [대쉬] 설정 변수들
     [Header("대쉬 설정")]
     public float dashSpeed = 20f;      // 대쉬 속도 (이동 속도의 3~4배 추천)
@@ -81,7 +85,16 @@ public class PlayerMovement : MonoBehaviour
         // 1. 조작 완전 불가 상태 (벽 점프, 대쉬 중)
         // 대쉬 중일 때도 return을 해서 이동/점프/벽타기 로직을 다 무시해야 함
         if (isWallJumping || isDashing || isKnockedBack) return;
-
+        // 1. 땅에 있으면 타이머 충전
+        if (isGrounded)
+        {
+            coyoteTimer = coyoteTime;
+        }
+        else
+        {
+            // 땅에서 떨어지면 시간 줄어듦
+            coyoteTimer -= Time.deltaTime;
+        }
         // 2. 대쉬 입력 체크 (Z, X는 공격이니 C나 Shift 추천)
         if (Input.GetKeyDown(KeyCode.LeftShift))
         {
@@ -211,7 +224,7 @@ void HandleWallSlide()
 
             if (Input.GetKeyDown(KeyCode.Space))
             {
-                if (isGrounded)
+                if (coyoteTimer > 0f)
                 {
                     PerformJump();
                     canDoubleJump = true;

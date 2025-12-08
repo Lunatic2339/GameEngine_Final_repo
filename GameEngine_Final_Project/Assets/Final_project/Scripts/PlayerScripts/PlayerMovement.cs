@@ -54,11 +54,18 @@ public class PlayerMovement : MonoBehaviour
     private Animator animator;
     private Rigidbody2D rb;
 
+    [HideInInspector] public Vector2 platformVelocity;
+
     void Start()
     {
+        Time.timeScale = 1f;
         animator = GetComponent<Animator>();
         rb = GetComponent<Rigidbody2D>();
         bodyCollider = GetComponent<CapsuleCollider2D>();
+        // 2. 물리 설정 강제 초기화
+        rb.linearVelocity = Vector2.zero; // 혹시 남아있을 속도 제거
+        rb.gravityScale = 4f;       // 중력을 4 정도로 묵직하게 설정 (취향껏 조절)
+        rb.linearDamping = 0f;
         
         originalSize = bodyCollider.size;
         originalOffset = bodyCollider.offset;
@@ -242,7 +249,7 @@ void HandleWallSlide()
             moveX = 0f;
         }
 
-        rb.linearVelocity = new Vector2(moveX * moveSpeed, rb.linearVelocity.y);
+        rb.linearVelocity = new Vector2((moveX * moveSpeed) + platformVelocity.x, rb.linearVelocity.y);
 
         if (moveX != 0) transform.localScale = new Vector2(Mathf.Sign(moveX), 1f);
 

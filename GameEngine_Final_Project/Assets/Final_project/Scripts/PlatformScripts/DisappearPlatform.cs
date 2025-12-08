@@ -3,68 +3,127 @@ using System.Collections;
 
 public class DisappearingPlatform : MonoBehaviour
 {
-    // 모드 선택을 위한 열거형(Enum) 정의
     public enum PlatformMode { Blink, Fade }
 
     [Header("모드 설정")]
-    public PlatformMode platformMode = PlatformMode.Blink; // 기본은 깜빡임 모드
+    public PlatformMode platformMode = PlatformMode.Blink;
+
+    // ★ [추가된 기능]
+    [Header("작동 방식")]
+    public bool activateOnTouch = false; // 체크하면 "닿았을 때" 작동, 해제하면 "자동" 반복
 
     [Header("공통 시간 설정")]
-    public float activeTime = 2f;    // 완전히 켜져서 버티는 시간
-    public float inactiveTime = 2f;  // 완전히 꺼져서 안 보이는 시간
-    public float startDelay = 0f;    // 시작 지연 (엇박자용)
+    public float activeTime = 0.5f;  // 밟고 나서 사라지기까지 버티는 시간 (자동 모드에선 켜져있는 시간)
+    public float inactiveTime = 2f;  // 사라진 뒤 재생성까지 걸리는 시간
+    public float startDelay = 0f;    // (자동 모드용) 시작 지연
 
     [Header("Blink 모드 전용 설정")]
-    public float blinkDuration = 0.5f; // 사라지기 전 깜빡이는 총 시간
+    public float blinkDuration = 0.5f; // 사라지기 전 깜빡이는 시간
     public float blinkInterval = 0.1f; // 깜빡이는 속도
 
     [Header("Fade 모드 전용 설정")]
-    public float fadeDuration = 1.0f;  // 서서히 사라지거나 나타나는 데 걸리는 시간
+    public float fadeDuration = 1.0f; 
 
     private BoxCollider2D boxCollider;
     private SpriteRenderer spriteRenderer;
-    private Color originalColor; // 원래 색상 기억용
+    private Color originalColor;
+    private bool isRunning = false; // 현재 루틴이 실행 중인지 체크
 
     void Start()
     {
         boxCollider = GetComponent<BoxCollider2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
-        originalColor = spriteRenderer.color; // 시작할 때 색상 저장
+        originalColor = spriteRenderer.color;
 
-        // 코루틴 시작
-        StartCoroutine(CycleRoutine());
+        // ★ 설정에 따라 시작 방식 분기
+        if (!activateOnTouch)
+        {
+            // 1. 자동 반복 모드 (기존 동작)
+            StartCoroutine(AutoCycleRoutine());
+        }
+        else
+        {
+            // 2. 터치 대기 모드 (일단 켜두고 대기)
+            EnablePlatform(true);
+            SetAlpha(1f);
+        }
     }
 
-    IEnumerator CycleRoutine()
+    // ★ [추가됨] 플레이어가 닿았을 때 실행 (Touch 모드일 때만)
+    private void OnCollisionEnter2D(Collision2D collision)
     {
-        // 1. 시작 대기 (엇박자)
-        if (startDelay > 0)
-            yield return new WaitForSeconds(startDelay);
-
-        while (true) // 무한 반복
+        // 터치 모드이고 + 아직 실행 중이 아니고 + 플레이어가 닿았다면
+        if (activateOnTouch && !isRunning && collision.gameObject.CompareTag("Player"))
         {
-            if (platformMode == PlatformMode.Blink)
+            // 발판 윗면을 밟았을 때만 작동 (옆에서 스치면 작동 X)
+            // (필요 없으면 이 if문은 지워도 됨)
+            if (collision.GetContact(0).normal.y < -0.5f)
             {
-                // === 모드 1: 깜빡이다 사라지기 ===
-                yield return StartCoroutine(BlinkModeRoutine());
-            }
-            else if(platformMode == PlatformMode.Fade)
-            {
-                // === 모드 2: 서서히 사라지기 (Fade) ===
-                yield return StartCoroutine(FadeModeRoutine());
+                StartCoroutine(OneShotRoutine());
             }
         }
     }
 
     // =================================================================
-    // 모드 1: Blink (기존 로직)
+    // [루틴 1] 자동 반복 (Auto)
     // =================================================================
+    IEnumerator AutoCycleRoutine()
+    {
+        if (startDelay > 0)
+            yield return new WaitForSeconds(startDelay);
+
+        while (true)
+        {
+            if (platformMode == PlatformMode.Blink)
+                yield return StartCoroutine(BlinkModeRoutine());
+            else
+                yield return StartCoroutine(FadeModeRoutine());
+            
+            // Blink 모드는 루틴이 끝날 때 꺼져 있으므로 다시 켜줘야 함
+            // (Fade 모드는 루틴 안에 켜는 게 포함돼 있음)
+            if (platformMode == PlatformMode.Blink)
+            {
+                EnablePlatform(true);
+                SetAlpha(1f);
+            }
+        }
+    }
+
+    // =================================================================
+    // [루틴 2] 한 번 작동하고 재생성 (Touch)
+    // =================================================================
+    IEnumerator OneShotRoutine()
+    {
+        isRunning = true; // 중복 실행 방지 잠금
+
+        if (platformMode == PlatformMode.Blink)
+        {
+            yield return StartCoroutine(BlinkModeRoutine());
+            
+            // 재생성 (켜주기)
+            EnablePlatform(true);
+            SetAlpha(1f);
+        }
+        else
+        {
+            yield return StartCoroutine(FadeModeRoutine());
+            // Fade 모드는 내부에서 다시 켜짐
+        }
+
+        isRunning = false; // 잠금 해제
+    }
+
+    // =================================================================
+    // 동작 상세 로직 (기존 코드 재활용)
+    // =================================================================
+    
     IEnumerator BlinkModeRoutine()
     {
-        // [ON] 켜기
-        EnablePlatform(true);
-        SetAlpha(1f); // 알파값 확실하게 복구
-        yield return new WaitForSeconds(activeTime - blinkDuration);
+        // [ON 상태 유지] (activeTime - 깜빡임 시간) 만큼 대기
+        // * 터치 모드일 경우: 밟고 나서 이 시간만큼 버티다 깜빡임
+        float waitTime = activeTime - blinkDuration;
+        if (waitTime > 0)
+            yield return new WaitForSeconds(waitTime);
 
         // [WARNING] 깜빡임
         float timer = 0f;
@@ -74,66 +133,51 @@ public class DisappearingPlatform : MonoBehaviour
             yield return new WaitForSeconds(blinkInterval);
             timer += blinkInterval;
         }
-        spriteRenderer.enabled = true; // 루프 끝나면 확실히 켜둠
+        spriteRenderer.enabled = true; 
 
         // [OFF] 끄기
         EnablePlatform(false);
         yield return new WaitForSeconds(inactiveTime);
     }
 
-    // =================================================================
-    // 모드 2: Fade (신규 로직)
-    // =================================================================
     IEnumerator FadeModeRoutine()
     {
-        // 1. [ON 유지] 완전히 켜진 상태로 대기
+        // 1. [ON 유지]
         EnablePlatform(true);
         SetAlpha(1f);
-        yield return new WaitForSeconds(activeTime);
+        yield return new WaitForSeconds(activeTime); // 밟고 나서 버티는 시간
 
         // 2. [Fade Out] 서서히 사라짐
-        // ★ 중요: 사라지는 동안에는 아직 밟을 수 있어야 함 (콜리더 ON 유지)
         yield return StartCoroutine(FadeRoutine(1f, 0f));
 
-        // 3. [OFF 상태 진입] 완전히 투명해졌으면 콜리더 끔
+        // 3. [OFF]
         boxCollider.enabled = false; 
-        yield return new WaitForSeconds(inactiveTime);
+        yield return new WaitForSeconds(inactiveTime); // 사라져 있는 시간
 
-        // 4. [Fade In] 서서히 나타남
-        // ★ 중요: 나타나기 시작하는 순간부터 밟을 수 있어야 함
-        boxCollider.enabled = true; // 콜리더 먼저 켬
+        // 4. [Fade In] 재생성
+        boxCollider.enabled = true;
         yield return StartCoroutine(FadeRoutine(0f, 1f));
-        
-        // (루프가 돌아가면 1번 단계에서 activeTime만큼 대기함)
     }
 
-    // 알파값을 부드럽게 변경하는 코루틴 (Fade In/Out 공용)
     IEnumerator FadeRoutine(float startAlpha, float endAlpha)
     {
         float timer = 0f;
         while (timer < fadeDuration)
         {
             timer += Time.deltaTime;
-            float t = timer / fadeDuration; // 0~1 사이 진행률
-            SetAlpha(Mathf.Lerp(startAlpha, endAlpha, t)); // 선형 보간으로 알파값 변경
-            yield return null; // 다음 프레임까지 대기
+            float t = timer / fadeDuration;
+            SetAlpha(Mathf.Lerp(startAlpha, endAlpha, t));
+            yield return null;
         }
-        SetAlpha(endAlpha); // 끝나면 목표값으로 확실하게 고정
+        SetAlpha(endAlpha);
     }
 
-
-    // =================================================================
-    // 유틸리티 함수들
-    // =================================================================
-
-    // 발판 켜고 끄기 (렌더러 + 콜리더)
     void EnablePlatform(bool isActive)
     {
         spriteRenderer.enabled = isActive;
         boxCollider.enabled = isActive;
     }
 
-    // 알파값(투명도)만 변경하는 함수
     void SetAlpha(float alpha)
     {
         Color newColor = originalColor;

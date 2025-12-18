@@ -92,11 +92,8 @@ public class GameManager : MonoBehaviour
         Debug.Log("게임 오버! UI를 띄웁니다.");
         
         // 씬에 있는 UI를 찾아서 띄움
-        if (gameOverUI == null) 
-            gameOverUI = FindFirstObjectByType<GameOverUI>();
             
-        if (gameOverUI != null)
-            gameOverUI.ShowGameOver();
+        if (gameOverUI != null) gameOverUI.ShowGameOver();
     }
 
     // 재시작 (버튼 연결용)

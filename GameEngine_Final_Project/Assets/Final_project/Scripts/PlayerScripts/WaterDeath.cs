@@ -18,7 +18,8 @@ public class WaterDeath : MonoBehaviour
         
         // 같은 오브젝트에 있는 PlayerHealth 스크립트를 찾아옵니다.
         playerHealth = GetComponent<PlayerHealth>(); 
-        
+        rb.gravityScale = 4f; // 중력을 1(정상)로 돌려놓음
+        rb.linearDamping = 0f;         // 공기 저항도 0으로 (혹시 높여놨을까 봐)
         if (playerHealth == null)
         {
             Debug.LogError("PlayerHealth 스크립트가 플레이어에 없습니다!");

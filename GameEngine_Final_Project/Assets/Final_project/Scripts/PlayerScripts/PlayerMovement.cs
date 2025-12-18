@@ -80,10 +80,11 @@ public class PlayerMovement : MonoBehaviour
             unlockDoubleJump = GameManager.instance.hasDoubleJump;
 
             // 2. 체크포인트 위치로 이동 (저장된 적이 있다면)
-            if (GameManager.instance.isCheckpointActive)
-            {
-                transform.position = GameManager.instance.lastCheckPointPos;
-            }
+            if (GameManager.isCheckpointActive) 
+                {
+                    // 저장된 위치로 이동
+                    transform.position = GameManager.lastCheckPointPos;
+                }
         }
     }
 

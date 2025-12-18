@@ -46,7 +46,23 @@ public class PlayerHealth : MonoBehaviour
             spriteRenderer = GetComponent<SpriteRenderer>();
         }
         onHealthChanged?.Invoke();
+        Rigidbody2D rb = GetComponent<Rigidbody2D>();
+        if (rb != null)
+        {
+            rb.gravityScale = 4f; // 본인이 설정한 기본 중력값이 1이 아니라면 그 숫자를 넣으세요 (예: 3f)
+            rb.linearVelocity = Vector2.zero; // 시작하자마자 튕겨나가는 힘 제거
+        }
     }
+    void Update()
+{
+    // y축 위치가 -10보다 작아지면 (맵 밖으로 떨어지면)
+    if (transform.position.y < -15f) 
+    {
+        // 사망 처리 함수 호출
+        Die(); 
+        // 혹은 PlayerHealth가 다른 스크립트에 있다면: GetComponent<PlayerHealth>().Die();
+    }
+}
 
     void OnCollisionEnter2D(Collision2D collision)
     {

@@ -2,6 +2,10 @@ using UnityEngine;
 
 public class MovingPlatform : MonoBehaviour
 {
+    [Header("트리거 설정 (비워두면 자동 시작)")]
+    public GameObject connectedEnemy; // ★ 여기에 몬스터를 드래그해서 넣으세요
+    private bool isLocked = false;    // 내부적으로 사용하는 잠금 변수
+
     [Header("이동 설정")]
     public Vector3 moveDistance = new Vector3(3f, 0f, 0f);
     public float moveSpeed = 2f;
@@ -12,7 +16,7 @@ public class MovingPlatform : MonoBehaviour
     private bool isMovingToTarget = true;
     private float waitTimer = 0f;
 
-    // ★ [추가] 발판의 실제 속도를 계산하기 위한 변수
+    // 발판의 실제 속도를 계산하기 위한 변수
     private Vector3 lastPos;
     private Vector2 currentVelocity;
 
@@ -21,11 +25,38 @@ public class MovingPlatform : MonoBehaviour
         startPos = transform.position;
         targetPos = startPos + moveDistance;
         lastPos = transform.position;
+
+        // ★ [핵심 로직 1] 시작할 때 적이 연결되어 있는지 확인
+        if (connectedEnemy != null)
+        {
+            isLocked = true; // 적이 있으면 일단 잠금 (움직이지 마!)
+        }
+        else
+        {
+            isLocked = false; // 적이 없으면 바로 움직임
+        }
     }
 
     void Update()
     {
-        // 1. 실제 이동 로직 (기존과 동일)
+        // ★ [핵심 로직 2] 잠겨있다면, 적이 죽었는지 확인
+        if (isLocked)
+        {
+            // 연결된 적이 게임에서 사라졌다면 (죽었다면) -> null이 됨
+            if (connectedEnemy == null)
+            {
+                isLocked = false; // 잠금 해제! 이제 움직여라
+            }
+            else
+            {
+                // 적이 아직 살아있으면 움직이지 않고 리턴
+                currentVelocity = Vector2.zero;
+                return; 
+            }
+        }
+
+        // --- 아래는 기존 이동 로직과 동일 ---
+
         if (waitTimer > 0)
         {
             waitTimer -= Time.deltaTime;
@@ -41,8 +72,7 @@ public class MovingPlatform : MonoBehaviour
         // 이동 실행
         transform.position = Vector3.MoveTowards(transform.position, destination, moveSpeed * Time.deltaTime);
 
-        // ★ [핵심] 이번 프레임에 얼마나 움직였는지 계산해서 속도(Velocity) 구하기
-        // (이동한 거리 / 시간 = 속도)
+        // 이번 프레임에 얼마나 움직였는지 계산해서 속도(Velocity) 구하기
         if (Time.deltaTime > 0)
         {
             currentVelocity = (transform.position - previousPosition) / Time.deltaTime;
@@ -58,10 +88,9 @@ public class MovingPlatform : MonoBehaviour
     }
 
     // ---------------------------------------------------------
-    // ★ 수정된 충돌 로직 (SetParent 대신 속도 전달)
+    // 충돌 로직 (그대로 유지)
     // ---------------------------------------------------------
 
-    // 플레이어가 닿아있는 동안 계속 속도를 전달해야 함 (Stay 사용)
     private void OnCollisionStay2D(Collision2D collision)
     {
         if (collision.gameObject.CompareTag("Player"))
@@ -72,14 +101,12 @@ public class MovingPlatform : MonoBehaviour
                 PlayerMovement player = collision.gameObject.GetComponent<PlayerMovement>();
                 if (player != null)
                 {
-                    // ★ 플레이어에게 내 속도를 전달!
                     player.platformVelocity = currentVelocity;
                 }
             }
         }
     }
 
-    // 플레이어가 떨어지면 속도 전달 중지
     private void OnCollisionExit2D(Collision2D collision)
     {
         if (collision.gameObject.CompareTag("Player"))
@@ -87,7 +114,6 @@ public class MovingPlatform : MonoBehaviour
             PlayerMovement player = collision.gameObject.GetComponent<PlayerMovement>();
             if (player != null)
             {
-                // ★ 발판 속도 제거 (안 그러면 계속 미끄러짐)
                 player.platformVelocity = Vector2.zero;
             }
         }

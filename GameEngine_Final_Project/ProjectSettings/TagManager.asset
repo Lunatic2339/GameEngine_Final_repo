@@ -9,6 +9,7 @@ TagManager:
   - Terrain
   - Ground
   - teleport
+  - Water
   layers:
   - Default
   - TransparentFX

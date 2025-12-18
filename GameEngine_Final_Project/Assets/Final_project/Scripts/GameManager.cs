@@ -11,26 +11,26 @@ public class GameManager : MonoBehaviour
     public bool hasDash = false;       // 대쉬 배웠니? (나중에 확장)
     public int coinCount = 0;          // 코인 개수
 
-    public Vector2 lastCheckPointPos; // ★ 마지막 체크포인트 위치 기억
-    public bool isCheckpointActive = false; // 체크포인트를 한 번이라도 찍었는지 확인
-
+    [Header("체크포인트 정보 (저장됨)")]
+    public static Vector2 lastCheckPointPos; 
+    public static bool isCheckpointActive = false;
     [Header("UI 연결 (Inspector에서 할당 X, 코드로 찾음)")]
     public GameOverUI gameOverUI; // 게임 오버 화면 스크립트
 
-    void Awake()
+void Awake()
     {
-        // 1. 싱글톤 패턴 구현
-        if (instance == null)
-        {
-            instance = this; // 내가 바로 그 유일한 매니저다!
-            DontDestroyOnLoad(gameObject); // 씬이 바껴도 나를 파괴하지 마라!
-        }
-        else
-        {
-            // 만약 씬을 이동했는데 또 다른 GameManager가 있다면?
-            // 짝퉁은 바로 제거한다. (중복 방지)
-            Destroy(gameObject);
-        }
+        // 복잡한 if/else 다 지우고, 무조건 나를 대장으로 임명
+        instance = this;
+        
+        // 시간 다시 흐르게 하기 (중요)
+        Time.timeScale = 1f;
+    }
+
+    void Start()
+    {
+        Time.timeScale = 1f; // 혹시 모르니 시간 정상화
+        // FindObjectOfType 대신 FindFirstObjectByType 사용
+        gameOverUI = FindFirstObjectByType<GameOverUI>();
     }
     // ★ [핵심] 데이터 저장하기 (체크포인트 닿을 때 호출)
     // -----------------------------------------------------------
@@ -110,7 +110,6 @@ public class GameManager : MonoBehaviour
     {
         lastCheckPointPos = pos;
         isCheckpointActive = true;
-        Debug.Log("체크포인트 저장됨: " + pos);
     }
 }
 

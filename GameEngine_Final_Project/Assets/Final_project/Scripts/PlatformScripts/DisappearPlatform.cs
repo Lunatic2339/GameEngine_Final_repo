@@ -1,62 +1,69 @@
 using UnityEngine;
+using UnityEngine.Tilemaps; // ★ 타일맵 기능을 쓰기 위해 필수!
 using System.Collections;
-
-public class DisappearingPlatform : MonoBehaviour
+public class DisappearingPlatformTilemap : MonoBehaviour
 {
     public enum PlatformMode { Blink, Fade }
 
     [Header("모드 설정")]
     public PlatformMode platformMode = PlatformMode.Blink;
 
-    // ★ [추가된 기능]
     [Header("작동 방식")]
-    public bool activateOnTouch = false; // 체크하면 "닿았을 때" 작동, 해제하면 "자동" 반복
+    public bool activateOnTouch = false;
 
     [Header("공통 시간 설정")]
-    public float activeTime = 0.5f;  // 밟고 나서 사라지기까지 버티는 시간 (자동 모드에선 켜져있는 시간)
-    public float inactiveTime = 2f;  // 사라진 뒤 재생성까지 걸리는 시간
-    public float startDelay = 0f;    // (자동 모드용) 시작 지연
+    public float activeTime = 0.5f;
+    public float inactiveTime = 2f;
+    public float startDelay = 0f;
 
     [Header("Blink 모드 전용 설정")]
-    public float blinkDuration = 0.5f; // 사라지기 전 깜빡이는 시간
-    public float blinkInterval = 0.1f; // 깜빡이는 속도
+    public float blinkDuration = 0.5f;
+    public float blinkInterval = 0.1f;
 
     [Header("Fade 모드 전용 설정")]
-    public float fadeDuration = 1.0f; 
+    public float fadeDuration = 1.0f;
 
-    private BoxCollider2D boxCollider;
-    private SpriteRenderer spriteRenderer;
+    // ★ 변경점: SpriteRenderer -> Tilemap 관련 컴포넌트로 변경
+    private Tilemap tilemap;
+    private TilemapRenderer tilemapRenderer;
+    private Collider2D col; // BoxCollider2D, TilemapCollider2D 모두 호환되도록 부모 클래스 사용
+    
     private Color originalColor;
-    private bool isRunning = false; // 현재 루틴이 실행 중인지 체크
+    private bool isRunning = false;
 
     void Start()
     {
-        boxCollider = GetComponent<BoxCollider2D>();
-        spriteRenderer = GetComponent<SpriteRenderer>();
-        originalColor = spriteRenderer.color;
+        // ★ 컴포넌트 가져오는 부분 변경
+        tilemap = GetComponent<Tilemap>();
+        tilemapRenderer = GetComponent<TilemapRenderer>();
+        col = GetComponent<Collider2D>(); // TilemapCollider2D도 이걸로 가져와집니다.
 
-        // ★ 설정에 따라 시작 방식 분기
+        // 안전장치: 타일맵이 없으면 에러 로그 출력
+        if (tilemap == null || tilemapRenderer == null)
+        {
+            Debug.LogError("이 스크립트는 Tilemap과 TilemapRenderer가 있는 오브젝트에 붙여야 합니다!", gameObject);
+            return;
+        }
+
+        originalColor = tilemap.color;
+
         if (!activateOnTouch)
         {
-            // 1. 자동 반복 모드 (기존 동작)
             StartCoroutine(AutoCycleRoutine());
         }
         else
         {
-            // 2. 터치 대기 모드 (일단 켜두고 대기)
             EnablePlatform(true);
             SetAlpha(1f);
         }
     }
 
-    // ★ [추가됨] 플레이어가 닿았을 때 실행 (Touch 모드일 때만)
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        // 터치 모드이고 + 아직 실행 중이 아니고 + 플레이어가 닿았다면
         if (activateOnTouch && !isRunning && collision.gameObject.CompareTag("Player"))
         {
-            // 발판 윗면을 밟았을 때만 작동 (옆에서 스치면 작동 X)
-            // (필요 없으면 이 if문은 지워도 됨)
+            // 타일맵 콜라이더는 모양이 복잡할 수 있어서 윗면 체크를 단순화하거나 
+            // 필요하다면 유지합니다. (여기선 유지)
             if (collision.GetContact(0).normal.y < -0.5f)
             {
                 StartCoroutine(OneShotRoutine());
@@ -64,13 +71,11 @@ public class DisappearingPlatform : MonoBehaviour
         }
     }
 
-    // =================================================================
-    // [루틴 1] 자동 반복 (Auto)
-    // =================================================================
+    // --- 루틴 로직 (기존과 동일하지만 제어 대상만 다름) ---
+
     IEnumerator AutoCycleRoutine()
     {
-        if (startDelay > 0)
-            yield return new WaitForSeconds(startDelay);
+        if (startDelay > 0) yield return new WaitForSeconds(startDelay);
 
         while (true)
         {
@@ -78,9 +83,7 @@ public class DisappearingPlatform : MonoBehaviour
                 yield return StartCoroutine(BlinkModeRoutine());
             else
                 yield return StartCoroutine(FadeModeRoutine());
-            
-            // Blink 모드는 루틴이 끝날 때 꺼져 있으므로 다시 켜줘야 함
-            // (Fade 모드는 루틴 안에 켜는 게 포함돼 있음)
+
             if (platformMode == PlatformMode.Blink)
             {
                 EnablePlatform(true);
@@ -89,73 +92,55 @@ public class DisappearingPlatform : MonoBehaviour
         }
     }
 
-    // =================================================================
-    // [루틴 2] 한 번 작동하고 재생성 (Touch)
-    // =================================================================
     IEnumerator OneShotRoutine()
     {
-        isRunning = true; // 중복 실행 방지 잠금
+        isRunning = true;
 
         if (platformMode == PlatformMode.Blink)
         {
             yield return StartCoroutine(BlinkModeRoutine());
-            
-            // 재생성 (켜주기)
             EnablePlatform(true);
             SetAlpha(1f);
         }
         else
         {
             yield return StartCoroutine(FadeModeRoutine());
-            // Fade 모드는 내부에서 다시 켜짐
         }
 
-        isRunning = false; // 잠금 해제
+        isRunning = false;
     }
 
-    // =================================================================
-    // 동작 상세 로직 (기존 코드 재활용)
-    // =================================================================
-    
     IEnumerator BlinkModeRoutine()
     {
-        // [ON 상태 유지] (activeTime - 깜빡임 시간) 만큼 대기
-        // * 터치 모드일 경우: 밟고 나서 이 시간만큼 버티다 깜빡임
         float waitTime = activeTime - blinkDuration;
-        if (waitTime > 0)
-            yield return new WaitForSeconds(waitTime);
+        if (waitTime > 0) yield return new WaitForSeconds(waitTime);
 
-        // [WARNING] 깜빡임
         float timer = 0f;
         while (timer < blinkDuration)
         {
-            spriteRenderer.enabled = !spriteRenderer.enabled;
+            // ★ SpriteRenderer 대신 TilemapRenderer를 껐다 켰다 함
+            tilemapRenderer.enabled = !tilemapRenderer.enabled;
             yield return new WaitForSeconds(blinkInterval);
             timer += blinkInterval;
         }
-        spriteRenderer.enabled = true; 
+        tilemapRenderer.enabled = true;
 
-        // [OFF] 끄기
         EnablePlatform(false);
         yield return new WaitForSeconds(inactiveTime);
     }
 
     IEnumerator FadeModeRoutine()
     {
-        // 1. [ON 유지]
         EnablePlatform(true);
         SetAlpha(1f);
-        yield return new WaitForSeconds(activeTime); // 밟고 나서 버티는 시간
+        yield return new WaitForSeconds(activeTime);
 
-        // 2. [Fade Out] 서서히 사라짐
         yield return StartCoroutine(FadeRoutine(1f, 0f));
 
-        // 3. [OFF]
-        boxCollider.enabled = false; 
-        yield return new WaitForSeconds(inactiveTime); // 사라져 있는 시간
+        col.enabled = false;
+        yield return new WaitForSeconds(inactiveTime);
 
-        // 4. [Fade In] 재생성
-        boxCollider.enabled = true;
+        col.enabled = true;
         yield return StartCoroutine(FadeRoutine(0f, 1f));
     }
 
@@ -172,16 +157,18 @@ public class DisappearingPlatform : MonoBehaviour
         SetAlpha(endAlpha);
     }
 
+    // ★ 타일맵 제어 함수로 변경
     void EnablePlatform(bool isActive)
     {
-        spriteRenderer.enabled = isActive;
-        boxCollider.enabled = isActive;
+        tilemapRenderer.enabled = isActive; // 눈에 보이는 것 끄기
+        col.enabled = isActive;             // 밟는 것 끄기
     }
 
+    // ★ 타일맵 색상 제어 함수로 변경
     void SetAlpha(float alpha)
     {
         Color newColor = originalColor;
         newColor.a = alpha;
-        spriteRenderer.color = newColor;
+        tilemap.color = newColor; // SpriteRenderer.color 대신 Tilemap.color 사용
     }
 }

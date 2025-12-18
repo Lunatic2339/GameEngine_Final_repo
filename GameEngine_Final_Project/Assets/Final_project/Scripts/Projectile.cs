@@ -65,6 +65,11 @@ public class Projectile : MonoBehaviour
                 {
                     enemy.TakeDamage(damage); // 적 체력 깎기
                 }
+                BossController boss = collision.GetComponent<BossController>();
+                if (boss != null)
+                {
+                    boss.TakeDamage(damage); // 보스 체력 깎기
+                }
                 
                 Destroy(gameObject); // 총알 삭제
             }

@@ -116,7 +116,7 @@ public class PlayerHealth : MonoBehaviour
         StartCoroutine(InvincibilityRoutine());
     }
 
-    void Die()
+    public void Die()
     {
         Debug.Log("Game Over!");
         // 여기서 게임 오버 화면을 띄우거나 씬을 재시작하면 됩니다.

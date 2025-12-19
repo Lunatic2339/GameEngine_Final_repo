@@ -21,6 +21,8 @@ public class BossController : MonoBehaviour
 
     private Collider2D myCollider; 
     public BossCamSwitcher camSwitcher;
+    [Header("클리어 보상")]
+    public GameObject endingPlatform;
 
     void Start()
     {
@@ -213,6 +215,12 @@ public class BossController : MonoBehaviour
         }
 
         Debug.Log("보스 클리어!");
+        // ★ [추가] 엔딩 발판 활성화
+        if (endingPlatform != null)
+        {
+            endingPlatform.SetActive(true);
+            Debug.Log("탈출구 생성!");
+        }
         Destroy(gameObject);
     }
 }

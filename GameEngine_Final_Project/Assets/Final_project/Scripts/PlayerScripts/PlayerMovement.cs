@@ -28,7 +28,7 @@ public class PlayerMovement : MonoBehaviour
     [Header("조작감 보정")]
     public float coyoteTime = 0.1f; // 땅에서 발이 떨어져도 0.1초간은 점프 인정
     private float coyoteTimer;
-
+    public bool isCutscene = false;
     // ★ [대쉬] 설정 변수들
     [Header("대쉬 설정")]
     public float dashSpeed = 20f;      // 대쉬 속도 (이동 속도의 3~4배 추천)
@@ -194,7 +194,7 @@ void HandleWallSlide()
     {
         float moveX = 0f;
 
-        if (!isCharging)
+        if (!isCharging && !isCutscene)
         {
             if (isGrounded && !isOnWall && Input.GetKey(KeyCode.DownArrow))
             {

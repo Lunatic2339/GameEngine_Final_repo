@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using UnityEngine.UI; // ★ [필수] 이게 있어야 UI를 다룰 수 있습니다!
 
 public class BossController : MonoBehaviour
 {
@@ -8,6 +9,8 @@ public class BossController : MonoBehaviour
     private float currentHealth;
     public Transform player;      
     public bool isActivated = false; 
+    [Header("이펙트 설정")] 
+    public GameObject deathEffectPrefab; // ★ [추가] 죽을 때 터질 이펙트 프리팹
 
     [Header("공격 설정")]
     public GameObject bulletPrefab; 
@@ -25,6 +28,8 @@ public class BossController : MonoBehaviour
     [Header("클리어 보상")]
     public GameObject endingPlatform;
     public MusicManager musicManager;
+    [Header("UI 설정")]
+    public Slider healthBar; // ★ [추가] 체력바 슬라이더 연결
 
     void Start()
     {
@@ -44,8 +49,16 @@ public class BossController : MonoBehaviour
         {
             isActivated = true;
             Debug.Log("보스 활성화!");
+            if (healthBar != null)
+            {
+                healthBar.gameObject.SetActive(true); // UI 켜기
+                healthBar.maxValue = maxHealth;       // 최대 체력 설정
+                healthBar.value = currentHealth;      // 현재 체력 설정
+            }
             StartCoroutine(BossPatternRoutine());
         }
+        // ★ [추가] 보스가 깨어날 때 체력바 켜기 & 초기화
+
     }
 
     IEnumerator BossPatternRoutine()
@@ -218,6 +231,11 @@ public class BossController : MonoBehaviour
     public void TakeDamage(int damage)
     {
         currentHealth -= damage;
+        // ★ [추가] 맞을 때마다 체력바 깎기
+        if (healthBar != null)
+        {
+            healthBar.value = currentHealth;
+        }
         Debug.Log("보스 체력: " + currentHealth + "/" + maxHealth);
         if (currentHealth <= 0) Die();
     }
@@ -225,6 +243,16 @@ public class BossController : MonoBehaviour
     void Die()
     {
         StopAllCoroutines();
+        // ★ [추가] 죽음 이펙트 생성 (보스 위치에서 폭발!)
+        if (deathEffectPrefab != null)
+        {
+            Instantiate(deathEffectPrefab, transform.position, Quaternion.identity);
+        }
+        // ★ [추가] 보스 죽으면 체력바 다시 숨기기
+        if (healthBar != null)
+        {
+            healthBar.gameObject.SetActive(false);
+        }
         
         // 카메라 원상복구
         if (camSwitcher != null) camSwitcher.SwitchToNormalCam();

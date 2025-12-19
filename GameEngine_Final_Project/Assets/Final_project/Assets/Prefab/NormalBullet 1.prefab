@@ -50,7 +50,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   damage: 1
   isEnemyBullet: 1
-  lifeTime: 2
+  lifeTime: 10
 --- !u!212 &6841572450625102320
 SpriteRenderer:
   m_ObjectHideFlags: 0

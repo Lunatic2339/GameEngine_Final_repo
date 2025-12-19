@@ -16,15 +16,16 @@ public class BossController : MonoBehaviour
 
     [Header("이동 설정")]
     public float moveSpeed = 5f;
-    public Transform[] moveSpots; // 일반 이동 포인트들
-    public Transform rainSpot;    // ★ [추가] 공중 폭격 시 이동할 위치 (천장 중앙)
+    public Transform[] moveSpots; 
+    public Transform rainSpot;    
 
     private Collider2D myCollider; 
     public BossCamSwitcher camSwitcher;
+    
     [Header("클리어 보상")]
     public GameObject endingPlatform;
-// ★ [추가] 음악 매니저 변수
     public MusicManager musicManager;
+
     void Start()
     {
         currentHealth = maxHealth;
@@ -53,7 +54,6 @@ public class BossController : MonoBehaviour
 
         while (currentHealth > 0)
         {
-            // --- 패턴 랜덤 선택 (0 ~ 3) ---
             int randPattern = Random.Range(0, 4); 
             
             switch (randPattern)
@@ -62,16 +62,15 @@ public class BossController : MonoBehaviour
                     yield return StartCoroutine(MoveToRandomSpot());
                     yield return StartCoroutine(Pattern_RapidFire()); 
                     break;
-                case 1: // 원형 방사
+                case 1: // 원형 방사 (3연속)
                     yield return StartCoroutine(MoveToRandomSpot());
                     yield return StartCoroutine(Pattern_CircleFire()); 
                     break;
-                case 2: // 스파이럴
+                case 2: // 스파이럴 (길게)
                     yield return StartCoroutine(MoveToRandomSpot());
                     yield return StartCoroutine(Pattern_SpiralFire()); 
                     break;
-                case 3: // ★ [신규 패턴] 공중 폭격
-                    // 이 패턴은 랜덤 위치가 아니라 '지정된 공중 위치'로 가서 쏨
+                case 3: // 공중 폭격
                     yield return StartCoroutine(Pattern_RainFire()); 
                     break;
             }
@@ -80,7 +79,6 @@ public class BossController : MonoBehaviour
         }
     }
 
-    // 랜덤 이동 도우미 함수
     IEnumerator MoveToRandomSpot()
     {
         if (moveSpots.Length > 0)
@@ -92,7 +90,6 @@ public class BossController : MonoBehaviour
 
     IEnumerator MoveToSpot(Vector3 targetPos)
     {
-        // 이동하는 동안 기다림
         while (Vector3.Distance(transform.position, targetPos) > 0.1f)
         {
             transform.position = Vector3.MoveTowards(transform.position, targetPos, moveSpeed * Time.deltaTime);
@@ -101,79 +98,99 @@ public class BossController : MonoBehaviour
     }
 
     // --------------------------------------------------------
-    // ★ [추가된 패턴] 공중 폭격 (Rain Fire)
+    // ★ [수정됨] 패턴 1: 조준 연사 (발 말고 몸통 조준 + 발사 수 증가)
     // --------------------------------------------------------
+    IEnumerator Pattern_RapidFire()
+    {
+        Debug.Log("패턴 1: 조준 연사 강화판");
+        
+        // 10발 -> 20발로 증가
+        for (int i = 0; i < 20; i++) 
+        {
+            if (player == null) break;
+
+            // ★ [핵심] 플레이어의 위치(발바닥) + Y축 0.8f (가슴/머리) 쪽을 조준
+            Vector3 targetPosition = player.position + new Vector3(0, 0.8f, 0);
+            
+            Vector2 dir = (targetPosition - firePoint.position).normalized;
+            
+            // 탄속도 7 -> 9로 살짝 빠르게
+            FireBullet(dir, 9f); 
+            
+            // 연사 속도 더 빠르게 (0.1 -> 0.08)
+            yield return new WaitForSeconds(0.08f); 
+        }
+    }
+
+    // --------------------------------------------------------
+    // ★ [수정됨] 패턴 2: 원형 방사 (3번 연속 발사)
+    // --------------------------------------------------------
+    IEnumerator Pattern_CircleFire()
+    {
+        Debug.Log("패턴 2: 원형 방사 3연격");
+        
+        // 3번 반복해서 쏨 (팡! ... 팡! ... 팡!)
+        for (int wave = 0; wave < 3; wave++)
+        {
+            int bulletCount = 18; // 한 바퀴당 총알 수 증가 (12 -> 18)
+            float angleStep = 360f / bulletCount;
+            float startAngle = wave * 10f; // 쏠 때마다 각도를 살짝 비틀어서 쏘기 (피하기 어렵게)
+
+            for (int i = 0; i < bulletCount; i++)
+            {
+                float angle = startAngle + (i * angleStep);
+                float dirX = Mathf.Cos(angle * Mathf.Deg2Rad);
+                float dirY = Mathf.Sin(angle * Mathf.Deg2Rad);
+                Vector2 dir = new Vector2(dirX, dirY).normalized;
+                
+                FireBullet(dir, 6f);
+            }
+            
+            // 다음 파동까지 잠깐 대기
+            yield return new WaitForSeconds(0.4f);
+        }
+    }
+
+    // --------------------------------------------------------
+    // ★ [수정됨] 패턴 3: 스파이럴 (훨씬 길게 쏘기)
+    // --------------------------------------------------------
+    IEnumerator Pattern_SpiralFire()
+    {
+        Debug.Log("패턴 3: 스파이럴 강화");
+        float angle = 0f;
+
+        // 20발 -> 60발로 대폭 증가 (오랫동안 회전하며 쏨)
+        for (int i = 0; i < 60; i++)
+        {
+            float dirX = Mathf.Cos(angle * Mathf.Deg2Rad);
+            float dirY = Mathf.Sin(angle * Mathf.Deg2Rad);
+            Vector2 dir = new Vector2(dirX, dirY).normalized;
+            
+            FireBullet(dir, 7f);
+            
+            angle += 15f; // 회전 각도
+            yield return new WaitForSeconds(0.03f); // 발사 간격 더 촘촘하게
+        }
+    }
+
+    // --- [패턴 4: 공중 폭격 (기존 유지)] ---
     IEnumerator Pattern_RainFire()
     {
         Debug.Log("패턴 4: 공중 폭격 개시!");
 
-        // 1. 지정된 공중 위치(Rain Spot)로 이동 (없으면 그냥 제자리)
         if (rainSpot != null)
         {
             yield return StartCoroutine(MoveToSpot(rainSpot.position));
         }
 
-        // 2. 아래로 난사 (30발)
         for (int i = 0; i < 30; i++)
         {
-            // 아래쪽(270도)을 기준으로 좌우 45도 사이 랜덤 각도
             float randomAngle = 270f + Random.Range(-45f, 45f);
-
-            // 각도를 벡터로 변환
             float dirX = Mathf.Cos(randomAngle * Mathf.Deg2Rad);
             float dirY = Mathf.Sin(randomAngle * Mathf.Deg2Rad);
             Vector2 dir = new Vector2(dirX, dirY).normalized;
 
-            // 평소보다 조금 빠른 속도(8f)로 발사
             FireBullet(dir, 8f);
-
-            // 0.05초마다 발사 (아주 빠름)
-            yield return new WaitForSeconds(0.05f);
-        }
-    }
-
-    // --- [기존 패턴들] ---
-
-    IEnumerator Pattern_RapidFire()
-    {
-        Debug.Log("패턴 1: 조준 연사");
-        for (int i = 0; i < 10; i++)
-        {
-            if (player == null) break;
-            Vector2 dir = (player.position - firePoint.position).normalized;
-            FireBullet(dir, 7f);
-            yield return new WaitForSeconds(0.1f);
-        }
-    }
-
-    IEnumerator Pattern_CircleFire()
-    {
-        Debug.Log("패턴 2: 원형 방사");
-        int bulletCount = 12;
-        float angleStep = 360f / bulletCount;
-
-        for (int i = 0; i < bulletCount; i++)
-        {
-            float angle = i * angleStep;
-            float dirX = Mathf.Cos(angle * Mathf.Deg2Rad);
-            float dirY = Mathf.Sin(angle * Mathf.Deg2Rad);
-            Vector2 dir = new Vector2(dirX, dirY).normalized;
-            FireBullet(dir, 5f);
-        }
-        yield return new WaitForSeconds(0.5f);
-    }
-
-    IEnumerator Pattern_SpiralFire()
-    {
-        Debug.Log("패턴 3: 스파이럴");
-        float angle = 0f;
-        for (int i = 0; i < 20; i++)
-        {
-            float dirX = Mathf.Cos(angle * Mathf.Deg2Rad);
-            float dirY = Mathf.Sin(angle * Mathf.Deg2Rad);
-            Vector2 dir = new Vector2(dirX, dirY).normalized;
-            FireBullet(dir, 6f);
-            angle += 15f;
             yield return new WaitForSeconds(0.05f);
         }
     }
@@ -209,27 +226,24 @@ public class BossController : MonoBehaviour
     {
         StopAllCoroutines();
         
-// ★ [추가] 보스 죽으면 카메라 원상복구
-        if (camSwitcher != null)
-        {
-            camSwitcher.SwitchToNormalCam();
-        }
-        
+        // 카메라 원상복구
         if (camSwitcher != null) camSwitcher.SwitchToNormalCam();
         
-        // ★ [추가] 보스 죽었으니 다시 평소 음악으로!
-        if (musicManager != null)
-        {
-            musicManager.PlayStageMusic();
-        }
+        // 음악 복구
+        if (musicManager != null) musicManager.PlayStageMusic();
 
         Debug.Log("보스 클리어!");
-        // ★ [추가] 엔딩 발판 활성화
+        
+        // 엔딩 발판 생성
         if (endingPlatform != null)
         {
             endingPlatform.SetActive(true);
             Debug.Log("탈출구 생성!");
         }
+
+        // 벽이 있다면 없애주기 (BossTrigger에서 넣은 bossWall 변수가 있다면 여기서 꺼주는 게 좋음)
+        // (지금 코드엔 없어서 생략했지만, 필요하면 추가하세요)
+
         Destroy(gameObject);
     }
 }

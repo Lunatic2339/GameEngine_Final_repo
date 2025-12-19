@@ -6,7 +6,7 @@ using System.Collections;
 public class EndingPlatform : MonoBehaviour
 {
     [Header("설정")]
-    public float moveSpeed = 1f;
+    public float moveSpeed = 1.0f;
     public string endingSceneName = "EndingScene"; 
     public Image fadePanel; 
 
@@ -34,7 +34,7 @@ public class EndingPlatform : MonoBehaviour
             {
                 // 2. ★ [핵심] 물리 효과 완전히 끄기 (떨림 원인 제거)
                 playerRb.linearVelocity = Vector2.zero;      // 속도 초기화
-                playerRb.isKinematic = true;           // 물리력 무시 (Unity 6 이전: isKinematic, 최신: bodyType = Kinematic)
+                playerRb.bodyType = RigidbodyType2D.Kinematic;         // 물리력 무시 (Unity 6 이전: isKinematic, 최신: bodyType = Kinematic)
                 playerRb.simulated = false;            // ★ 물리 연산 자체를 중단 (충돌 감지 X)
             }
 
@@ -54,18 +54,18 @@ public class EndingPlatform : MonoBehaviour
         }
     }
 
-    void Update()
+    void FixedUpdate()
     {
         if (isActivated)
         {
-            // 발판을 위로 이동
+            // FixedUpdate 안에서도 Time.deltaTime을 써야 속도가 정상입니다.
             transform.Translate(Vector3.up * moveSpeed * Time.deltaTime);
         }
     }
 
     IEnumerator EndingSequence()
     {
-        yield return new WaitForSeconds(2f); // 2초 상승
+        yield return new WaitForSeconds(5f); // 2초 상승
 
         // 페이드 아웃 효과
         if (fadePanel != null)
@@ -81,7 +81,7 @@ public class EndingPlatform : MonoBehaviour
         }
         else
         {
-            yield return new WaitForSeconds(1f);
+            yield return new WaitForSeconds(2f);
         }
 
         SceneManager.LoadScene(endingSceneName);

@@ -23,7 +23,8 @@ public class BossController : MonoBehaviour
     public BossCamSwitcher camSwitcher;
     [Header("클리어 보상")]
     public GameObject endingPlatform;
-
+// ★ [추가] 음악 매니저 변수
+    public MusicManager musicManager;
     void Start()
     {
         currentHealth = maxHealth;
@@ -212,6 +213,14 @@ public class BossController : MonoBehaviour
         if (camSwitcher != null)
         {
             camSwitcher.SwitchToNormalCam();
+        }
+        
+        if (camSwitcher != null) camSwitcher.SwitchToNormalCam();
+        
+        // ★ [추가] 보스 죽었으니 다시 평소 음악으로!
+        if (musicManager != null)
+        {
+            musicManager.PlayStageMusic();
         }
 
         Debug.Log("보스 클리어!");

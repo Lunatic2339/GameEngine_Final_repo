@@ -16,6 +16,7 @@ public class GameManager : MonoBehaviour
     public static bool isCheckpointActive = false;
     [Header("UI 연결 (Inspector에서 할당 X, 코드로 찾음)")]
     public GameOverUI gameOverUI; // 게임 오버 화면 스크립트
+    public GameObject endingPanel; // 인스펙터에서 연결 필요
 
 void Awake()
     {
@@ -31,6 +32,11 @@ void Awake()
         Time.timeScale = 1f; // 혹시 모르니 시간 정상화
         // FindObjectOfType 대신 FindFirstObjectByType 사용
         gameOverUI = FindFirstObjectByType<GameOverUI>();
+        // 게임 시작 시 엔딩 패널이 켜져 있다면 강제로 끔
+        if (endingPanel != null)
+        {
+            endingPanel.SetActive(false);
+        }
     }
     // ★ [핵심] 데이터 저장하기 (체크포인트 닿을 때 호출)
     // -----------------------------------------------------------
